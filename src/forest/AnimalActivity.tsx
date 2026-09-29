@@ -1,8 +1,9 @@
+import {pictureAnimals} from '../play/pictureData'
 import { useRecall } from '../play/useRecall'
-import { scheduleForestSound } from '../audio/forestSounds'
+import {PictureGuess} from '../play/PictureGuess'
 import { dialogueId } from '../audio/MiloVoice'
 import { freshShuffle } from '../variation'
-import { narrate, stopNarration } from '../narration'
+import { narrate } from '../narration'
 import { useEffect, useRef, useState } from 'react'
 import type { ReactNode } from 'react'
 import { ForestAnimal } from './ForestArt'
@@ -34,7 +35,7 @@ function Frog({ sound, onComplete }: Props) {
   const groups = [a, b, a, b]
   const tiny = step >= 2 && variation.sizes[step - 2] === 'tiny'
   const count = step === 0 ? a : step === 1 ? b : 1
-  const messages = [`Boing! Try ${a} jumps with me. You can hop your fingers, too.`, `Now ${b} jumps! Count each landing.`, ...variation.sizes.map(size => size === 'big' ? 'Can you make one BIG frog jump?' : 'And one teeny-tiny jump? Boop!'), `${a} jumps, then ${b}. ${a}, then ${b}. How many jumps next?`, `${a}! You helped me across.`]
+  const messages = [`Show Frog ${a} little jumps!`, `Can you show Frog ${b} more jumps?`, ...variation.sizes.map(size => size === 'big' ? 'Show Frog your biggest jump!' : 'And one teeny-tiny jump? Boop!'), `${a} jumps, then ${b}. ${a}, then ${b}. How many jumps next?`, `${a}! You helped me across.`]
   return <Frame kind="frog" title="Hop with Frog" text={messages[step]} sound={sound}>
     {step < 4 && <div className="jump-pictures" aria-label="Frog on the ground, frog in the air, frog landing on the ground">
       <svg viewBox="0 0 510 160" role="img" aria-label={step >= 2 ? tiny ? 'A tiny low jump' : 'A big high jump' : step === 3 ? 'A tiny low jump' : 'Ground, jump, land'}>
@@ -54,7 +55,7 @@ function Bear({ sound, onComplete }: Props) {
   const [variation] = useState(() => ({ heights: freshShuffle('bear-heights', [[230,158,86], [242,178,108], [221,147,70]])[0], mirror: freshShuffle('bear-side', [false, true])[0] }))
   const branchY = variation.heights
   const bearY = height ? branchY[height - 1] - 111 : 191
-  const messages = ['First, reach your arms up like Bear. Then tap Done. You can sit or stand.', 'Stretch a little higher, then relax and tap Done. Oof, my tummy wobbled!', height === 0 ? 'Now use the picture. Tap the lowest branch Bear can reach first.' : height < 3 ? 'That holds me! Tap the next branch just above my paws.' : 'Sticky paws and a happy tummy. You helped me find a whole way up!']
+  const messages = ['Can you reach this high? Show Bear, then tap Done.', 'Can you reach a little higher? Then tap Done.', height === 0 ? 'Tap the lowest branch to help Bear.' : height < 3 ? 'That holds me! Tap the next branch just above my paws.' : 'Sticky paws and a happy tummy. You helped me find a whole way up!']
   return <Frame kind="bear" title="A way to the honey" text={messages[step]} sound={sound}>
     <svg className={`bear-tree ${hint ? 'show-reach' : ''}`} viewBox="0 -40 480 355" role="group" aria-label="Bear and three branches">
       <g transform={variation.mirror ? "translate(480 0) scale(-1 1)" : undefined}><path d="M285 295L295 20h35l12 275" fill="#b2a07c"/><ellipse cx="310" cy="30" rx="110" ry="33" fill="#9aae87"/>
@@ -65,7 +66,7 @@ function Bear({ sound, onComplete }: Props) {
       </g>)}
       <g className={`climbing-bear ${step < 2 ? 'bear-reaching' : ''}`} style={{ transform: `translate(120px, ${bearY}px)` }}><svg width="105" height="120"><ForestAnimal kind="bear" settled={height === 3}/></svg></g></g>
     </svg>
-    <p className="play-hint" role="status">{hint ? 'Hmm... that is a long reach. Look for a branch just above my paws.' : step === 2 && height < 3 ? 'Touch a branch to guide Bear. One careful step at a time.' : 'Reach in your own way, standing or sitting.'}</p>
+    <p className="play-hint" role="status">{hint ? 'Hmm... that is a long reach. Look for a branch just above my paws.' : step === 2 && height < 3 ? 'Touch a branch to guide Bear. One careful step at a time.' : 'Show Bear how you reach!'}</p>
     <div className="play-actions">{step < 2 ? <Action onClick={() => setStep(v => v + 1)}>Done</Action> : height === 3 ? <Action onClick={onComplete}>Enjoy your honey, Bear</Action> : null}</div>
   </Frame>
   function choose(i: number) { if (step !== 2 || height === 3) return; if (i === height) { setHeight(v => v + 1); setHint(false) } else setHint(true) }
@@ -105,38 +106,14 @@ function Squirrel({ sound, onComplete }: Props) {
   </Frame>
 }
 
-const sounds = ['Water', 'Leaves', 'Frog', 'Wings']
-const soundClues = ['Splish, trickle, splash. Water keeps tumbling over little stones.', 'Shhh, rustle, shhh. Dry leaves brush together in the breeze.', 'Ribbit... ribbit. A low croak comes from the puddle.', 'Flap-flap, a pause, then flap-flap. Something moves through the air.']
-const causes = [['A stream over stones', 'A sleepy bear'], ['Wind in the branches', 'Acorns sitting still'], ['Frog beside the puddle', 'A quiet rock'], ['A bird flying toward the nest', 'Bear walking on the ground']]
-function Owl({ sound, onComplete }: Props) {
-  const [round, setRound] = useState(0), [phase, setPhase] = useState(0), [heard, setHeard] = useState(false), [caption, setCaption] = useState(false), [hint, setHint] = useState(false), [playing, setPlaying] = useState(false)
-  const [variation] = useState(() => ({ order: [...freshShuffle('owl-sounds', [0,1,2]), 3], choices: freshShuffle('owl-choices', [0,1,2,3]), causes: freshShuffle('owl-causes', [0,1]) }))
-  const soundIndex = variation.order[round]
-  const context = useRef<AudioContext | null>(null), timer = useRef(0)
-  function stopAudio() { if (context.current) { void context.current.close(); context.current = null } clearTimeout(timer.current); setPlaying(false) }
-  useEffect(() => () => { if (context.current) void context.current.close(); clearTimeout(timer.current) }, [])
-  useEffect(() => { if (!sound) { if (context.current) { void context.current.close(); context.current = null } clearTimeout(timer.current) } }, [sound])
-  async function listen() {
-    stopAudio(); stopNarration(); setHeard(true)
-    if (!sound) { setCaption(true); return }
-    try {
-      const ctx = new AudioContext(); context.current = ctx; await ctx.resume()
-      if (context.current !== ctx) return
-      setPlaying(true)
-      // Soft synthesized environmental cues, generated locally without downloads.
-      scheduleForestSound(ctx, soundIndex)
-      timer.current=window.setTimeout(stopAudio,2500)
-    } catch { stopAudio(); setCaption(true) }
-  }
-  const text = phase === 2 ? round === 3 ? 'Wings, and a feather by the tree. A bird may have carried the light! Let us look gently.' : 'You listened, then looked for what could make it. Let us listen once more.' : phase === 1 ? 'What could have made that sound? Picture where it might come from.' : 'Be still with me a moment. What do you hear in our forest?'
-  return <Frame kind="owl" title="Listen with Owl" text={text} sound={sound}>
-    <div className={`owl-listening ${playing && sound ? 'is-listening' : ''}`}><span aria-hidden="true">{playing && sound ? ')))' : '~ ~ ~'}</span><Action onClick={listen}>{playing && sound ? 'Play sound again' : 'Listen to the forest'}</Action><Action onClick={() => { stopAudio(); setCaption(true); setHeard(true) }}>Read a sound clue</Action></div>
-    {caption && <p className="sound-caption">{soundClues[soundIndex]}</p>}
-    {phase === 0 && <div className="sound-choices">{variation.choices.map(i => <Action key={i} disabled={!heard} onClick={() => { stopAudio(); if(i===soundIndex) { setPhase(1); setHint(false) } else { setHint(true); setCaption(true) } }}>{sounds[i]}</Action>)}</div>}
-    {phase === 1 && <div className="play-actions">{variation.causes.map(i => <Action key={i} onClick={() => { if(i===0) { stopAudio(); setPhase(2); setHint(false) } else { setHint(true); setCaption(true) } }}>{causes[soundIndex][i]}</Action>)}</div>}
-    {hint && <p className="play-hint useful-clue" role="status">Hmm... listen again, or read the clue. What moves in that way?</p>}
-    {phase === 2 && <div className="play-actions"><Action onClick={() => { stopAudio(); if(round===3) onComplete(); else { setRound(v=>v+1); setPhase(0); setHeard(false); setCaption(false); setHint(false) } }}>{soundIndex===3 ? 'Follow the wing sounds' : 'Another forest sound'}</Action></div>}
-  </Frame>
+function Owl({sound,onComplete}:Props){
+ const [round,setRound]=useState(0),[done,setDone]=useState(false)
+ const [variation]=useState(()=>({order:[...freshShuffle('owl-pictures',[0,1,2]),3],choices:freshShuffle('owl-picture-choices',[0,1,2,3])}))
+ const target=variation.order[round]
+ return <Frame kind="owl" title="Look with Owl" text={done?round===3?'A bird! Look, a feather leads toward the nest.':'You found our forest friend.':`Find the ${pictureAnimals[target].name}!`} sound={sound}>
+  <PictureGuess key={round} target={target} choices={variation.choices} onComplete={()=>setDone(true)}/>
+  {done&&<div className="play-actions"><Action onClick={()=>{if(round===3)onComplete();else{setRound(n=>n+1);setDone(false)}}}>{round===3?'Follow the feathers':'Another picture'}</Action></div>}
+ </Frame>
 }
 
 export function AnimalActivity({ animal, ...props }: Props & { animal: PlayAnimal }) {

@@ -69,12 +69,12 @@ export const journeyStops: JourneyStop[] = [
     ],
   },
   {
-    id: 'owl', place: 'A sound in the quiet', point: [900, 375], camera: [945, 280, 950],
+    id: 'owl', place: 'A clue by the old tree', point: [900, 375], camera: [945, 280, 950],
     animal: 'owl', animalBox: [955, 232, 76, 83],
     lines: [
       line('owl', 'owl', 'Who goes'), line('owl', 'milo', 'We’re looking'), line('owl', 'owl', 'I didn’t'),
-      line('owl', 'owl', 'But I heard'),
-      { ...line('owl', 'owl', 'Yes, wings'), reveal: true }, line('owl', 'owl', 'Follow'),
+      {speaker:'Owl',text:'Look at these animal pictures with me.'},
+      {speaker:'Owl',text:'A bird! And look, a feather.',reveal:true}, line('owl', 'owl', 'Follow'),
     ],
   },
   {

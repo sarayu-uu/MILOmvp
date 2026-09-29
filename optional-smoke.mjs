@@ -6,7 +6,7 @@ const finish=async()=>{await p.getByRole('button',{name:'Let’s wander on'}).wa
 await open('Picnic surprise');await click('Ready! Hide the food');await click('Apple');await click('Banana');await click('Carrot');await finish();
 await open('Hungry bunnies');const bunnyCount=await p.getByRole('button',{name:/Feed bunny/}).count();for(let i=1;i<=bunnyCount;i++){await click('Pick up 🥕');await click('Feed bunny '+i)}await p.getByRole('button',{name:String(bunnyCount),exact:true}).click();await finish();
 await open('Butterfly friends');await click(await p.locator('.butterflies span').nth(1).evaluate(el=>el.style.filter==='none')?'Same':'Different');await finish();
-await open('A sound in the bushes');await click('Play animal sound');await click('Read a sound clue');const soundClue=await p.locator('.instruction h2').textContent();await click(soundClue.includes('Tweet')?'🐦 Bird':soundClue.includes('Ribbit')?'🐸 Frog':'🐶 Dog');await finish();
+await open('Pictures in the bushes');await click((await p.locator('.picture-target').textContent()).match(/Find the (\w+)!/)[1]);await finish();
 await open('Play with frog');for(let i=0;i<3;i++)await click('Done!');await finish();
 await open('Tell a little story');await click('Done telling my story');await finish();
 await open('Find something');for(let i=0;i<3;i++)await click('I found it!');await finish();

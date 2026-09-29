@@ -22,3 +22,57 @@
 button:hover,button:active{transform:none}
 .world-art>g[filter]{filter:none}
 .app:after,.forest-world:after{display:none}
+/* The homepage fits the visible browser area, including short laptop screens. */
+.app.map-view{height:100dvh;min-height:0}
+.map-view>header{padding:clamp(12px,3dvh,30px) clamp(20px,3vw,48px)}
+.map-view .welcome-dialogue{bottom:clamp(28px,8dvh,93px)}
+.map-view .welcome-milo{bottom:clamp(35px,8dvh,91px);width:clamp(100px,19dvh,170px)}
+.map-view .pond-location{height:clamp(65px,16dvh,155px)}
+@media(max-width:600px){
+ .map-view .world-art{top:29%;height:44%;width:100%;left:0}
+ .map-view .world-title{top:14%}
+ .map-view .world-title h1{font-size:clamp(24px,6.7vw,31px)}
+ .map-view .world-title p{font-size:11px}
+ .map-view .morning-note{top:11%;font-size:8px}
+ .map-view .play-together{top:29%;left:10%;width:80%;font-size:10px;padding:6px 9px}
+ .map-view .play-together strong{font-size:12px}
+ .map-view .home-location{top:37%;height:25%}
+ .map-view .forest-location{top:37%;height:24%}
+ .map-view .tree-location{top:34%;height:27%}
+ .map-view .pond-location{left:2%;top:64%;width:22%;height:clamp(55px,10dvh,80px)}
+ .map-view .welcome-dialogue{left:25%;width:72%;bottom:28px;padding:11px}
+ .map-view .welcome-dialogue h2{font-size:16px;margin:3px 0}
+ .map-view .welcome-dialogue p{font-size:11px;line-height:1.35}
+ .map-view .welcome-dialogue .primary{margin-top:8px;padding:10px 8px;min-height:44px}
+ .map-view .welcome-milo{left:1%;width:21%;bottom:6%}
+ .map-view .world-bottom{bottom:7px;font-size:8px}
+}
+@media(max-height:540px) and (min-width:601px){
+ .map-view>header{padding:8px 20px}
+ .map-view .brand-name{font-size:32px}
+ .map-view .brand>span:last-child{font-size:6px}
+ .map-view .world-title{top:6%}
+ .map-view .world-title h1{font-size:25px}
+ .map-view .world-title>span{font-size:8px}
+ .map-view .world-title p{font-size:11px}
+ .map-view .morning-note{top:18%;font-size:8px}
+ .map-view .play-together{top:25%;left:30%;width:40%;font-size:10px;padding:5px 8px}
+ .map-view .play-together strong{font-size:11px}
+ .map-view .location-label{font-size:12px;padding:7px 10px}
+ .map-view .path-marker{width:35px;height:35px;margin-bottom:6px}
+ .map-view .pond-location{left:4%;top:66%;width:18%;height:65px}
+ .map-view .welcome-dialogue{left:35%;width:62%;bottom:22px;padding:10px;gap:5px;flex-wrap:nowrap}
+ .map-view .welcome-dialogue h2{font-size:16px}
+ .map-view .welcome-dialogue p{font-size:11px}
+ .map-view .welcome-dialogue .primary{margin:0 0 0 auto;min-height:44px;padding:8px 12px}
+ .map-view .welcome-milo{left:24%;width:10%;bottom:20px}
+ .map-view .world-bottom{bottom:5px;font-size:8px}
+}
+@media(min-width:601px) and (min-height:541px) and (max-height:700px){
+ .map-view .world-title{top:12%}
+ .map-view .world-title h1{font-size:clamp(25px,5dvh,37px)}
+ .map-view .world-title p{font-size:12px}
+}
+@media(min-width:1001px) and (max-width:1200px){
+ .map-view .pond-location{left:3%;width:11%;height:65px}
+}

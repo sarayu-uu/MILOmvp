@@ -15,7 +15,7 @@ Build with `npm run build`, then `npm run preview`. Run `npm run lint` for stati
 
 Tap the forest path for a continuous illustrated journey with Milo, five woodland animals, and the hidden Story Tree. The original plant and bridge adventure remains available in grown-up settings. Tap the cottage for care interactions. The small settings icon opens the grown-up corner, optional activities, difficulty setting, local session summary and restart.
 
-Drag activities also support tapping an object and then its destination, including on touchscreens. Narration uses the browser's available speech synthesis voice; sound playback requires a user gesture. The listening activity uses a synthesized bird chirp. Text always remains available. Reduced motion is respected.
+Drag activities also support tapping an object and then its destination, including on touchscreens. Narration uses the browser's available speech synthesis voice; sound playback requires a user gesture. Former sound-guessing activities use visual animal pictures. Text always remains available. Reduced motion is respected.
 
 Session notes persist only in this browser's localStorage. Restart clears the current session. Fonts use Google Fonts with a local sans-serif fallback; gameplay has no network dependency once loaded. Optional activity objects currently use platform emoji, so their appearance varies by device. Narration and listening sounds are prototype audio, not studio recordings. There is no microphone, camera, or motion tracking.
 
@@ -44,7 +44,7 @@ After `npm run build`, run `node home-smoke.mjs` to check all five interactions,
 
 ## Forest world
 
-An original layered SVG landscape follows a winding path from the entrance to the Story Tree. Milo and the camera now switch immediately between path stops, using static pictures without animation. Visited animals retain small environmental changes; the nest and Forest Star reveal late in the journey. Text and optional narration guide the transitions. Five playable encounters now gate story progress: Frog demonstrates jumps and an alternating number pattern; Bear stretches and climbs three reachable branches in sequence; Baby Snake predicts, imitates and invents movements; Squirrel recalls two then three hidden acorns; Owl identifies four environmental sounds and reasons about their sources. Incorrect attempts provide gentle clues without penalties. Physical play uses a Done button and can be performed with hands or while seated. Owl uses soft synthesized audio with a readable clue alternative, including when muted. Rabbit and Fox are not added.
+An original layered SVG landscape follows a winding path from the entrance to the Story Tree. Milo and the camera now switch immediately between path stops, using static pictures without animation. Visited animals retain small environmental changes; the nest and Forest Star reveal late in the journey. Text and optional narration guide the transitions. Five playable encounters now gate story progress: Frog demonstrates jumps and an alternating number pattern; Bear stretches and climbs three reachable branches in sequence; Baby Snake predicts, imitates and invents movements; Squirrel recalls two then three hidden acorns; Owl helps children find animal pictures, ending with the bird and its feather clue. Incorrect attempts provide gentle clues without penalties. Physical play uses a Done button and can be performed with hands or while seated. Owl uses visual clues; narration is optional. Rabbit and Fox are not added.
 
 Progress and dialogue position persist in `milo-forest-world-v1`. Revisit earlier animals by tapping them or using Back. Restart session clears forest progress alongside home and session notes. Milo uses the existing unchanged character component. Forest animations and transitions are disabled for this version.
 
@@ -58,7 +58,7 @@ Frog uses ground / air / landing pictures linked by a dotted jump path. Bear ask
 
 ## Fresh activity variations
 
-Activity entry and explicit replay create a fresh configuration. Counts, alternating patterns, answer positions, hiding places, illustrated branch layouts, sound order, object locations, story props, color sequences and finding prompts vary. Each configuration stays fixed during an attempt, including retries and Look again. Picnic keeps the same three familiar foods, with shuffled order and choices. Owl keeps wings last so its clue still leads to the nest. Story chronology and sensible care routines remain coherent; their choices shuffle.
+Activity entry and explicit replay create a fresh configuration. Counts, alternating patterns, answer positions, hiding places, illustrated branch layouts, sound order, object locations, story props, color sequences and finding prompts vary. Each configuration stays fixed during an attempt, including retries and Look again. Picnic keeps the same three familiar foods, with shuffled order and choices. Owl keeps the bird last so its feather clue still leads to the nest. Story chronology and sensible care routines remain coherent; their choices shuffle.
 
 Completed forest encounters offer Play with the animal again. Completed home tasks offer Play again, resetting only that task and keeping the rest of the home progress. No animations or extra rendering loops were introduced. Variation history is stored locally to reduce immediate repeats; no online service is needed.
 
@@ -76,10 +76,18 @@ New requests stop previous audio and replace queued speech. Effect cleanup canno
 
 ## Story Tree library
 
-Tap the Story Tree or the home bookshelf to choose one of three illustrated books resting in the roots. Moon is a nighttime mystery with star recall, firefly patterns, sound clues, prediction and a path for returning moonlight. Bird follows remembered habitat clues through stones, landmark sequences and playful wing movements to a family nest. Cloud combines cause and effect, draggable raindrops, wind movements, observation and imaginative cloud shapes.
+Tap the Story Tree or the home bookshelf to choose one of three illustrated books resting in the roots. Moon is a nighttime mystery with star recall, firefly patterns, animal pictures, prediction and a path for returning moonlight. Bird follows remembered habitat clues through stones, landmark sequences and playful wing movements to a family nest. Cloud combines cause and effect, draggable raindrops, wind movements, observation and imaginative cloud shapes.
 
 Opening a book creates fresh challenges: star locations, pattern types, sounds, flower colors, landmark routes, answer locations, movement order, quantities, cloud shapes and opening dialogue vary. Clues stay consistent throughout that reading, including retries. Closing and reopening starts a fresh reading. All books remain available; finished stories leave a moon, feather or rainbow keepsake saved in `milo-story-library-v1`. Restart session clears these keepsakes.
 
-Scenes wait for the child. Narration uses the central MiloVoice service and can be replayed; listening also offers written clues. Movement is self-reported with Done, and raindrops support touch/mouse dragging, tapping and keyboard selection. The harder setting gives fewer drops than flowers and lets the child request the missing drops. A brief book-opening transition respects reduced motion; scene changes remain immediate. The intended 5?10 minute reading time depends on the child and still needs family playtesting.
+Scenes wait for the child. Narration uses the central MiloVoice service and can be replayed; every game can be played without it. Movement is self-reported with Done, and raindrops support touch/mouse dragging, tapping and keyboard selection. The harder setting gives fewer drops than flowers and lets the child request the missing drops. A brief book-opening transition respects reduced motion; scene changes remain immediate. The intended 5?10 minute reading time depends on the child and still needs family playtesting.
 
 After building, run `node story-smoke.mjs` for complete desktop/mobile story playthroughs, touch dragging, stable retry clues, harder counting, endings and persisted keepsakes. It starts and stops its own preview server and saves screenshots in `images/`.
+
+## Pond (ages 3?5)
+
+A small illustrated pond on the homepage opens four areas: Color fish, Frog lily pads, Letter bubbles and Shape shells. These are the only Pond activities. Prompts, fish arrangements, frog quantities (1?5), letters and shapes vary on replay. A wrong choice keeps the same challenge and offers a gentle clue. Children tap each frog once to count; the number appears beside it, with optional spoken counting. Color, letter and shape prompts include visual examples so reading or hearing narration is not required. Targets stay still for easy tapping.
+
+The homepage includes the Play Together message. Existing House, Forest and Story Tree artwork and the original Milo character are preserved. Selected movement and place-selection instructions are shorter. Sound guessing in Owl, the Moon story and the optional bushes game is replaced with emoji animal matching; none requires audio playback. No new backend, accounts, scores, rewards or parent systems are introduced.
+
+After building, `node pond-smoke.mjs` checks all four activities and replays, gentle retries, counting, keyboard and touch input, return navigation and four screen sizes. It also disables the Web Audio API to check the games do not rely on sound effects. Screenshots are saved in `images/`.

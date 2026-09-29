@@ -21,13 +21,13 @@ export function scenesFor(v:StoryVariation):Scene[]{
   {kind:'opening',title:'A sleepy moon',text:v.opening?'The moon is here, but its glow is gone. A firefly whispers, "Will you help us find it?"':'"That is strange," says Milo. "The moon looks sleepy." A firefly whispers, "It lost its glow!"'},
   {kind:'stars',title:'Two little lights',text:'Two stars wink at us. Remember where they are, then help their light return.'},
   {kind:'fireflies',title:'A firefly clue',text:'The fireflies are making a pattern. Can you finish it so they can show us the way?'},
-  {kind:'night-sound',title:'Listen to the night',text:'Shhh... something is nearby. Listen, or read the sound clue.'},
+  {kind:'night-sound',title:'A friend by the tree',text:'Find the matching animal picture to help us look for moonlight.'},
   {kind:'prediction',title:'A jar of moonlight',text:'An owl, a windy tree, a sleepy cloud... How do you think the moonlight got into this jar?'},
   {kind:'moon-route',title:'A way back to the sky',text:'Drag the firefly along the dotted path: tree, cloud, then moon. You can tap each stop too.'},
   {kind:'ending',title:'There you are',text:'The moon shines softly over the forest. "There you are," says Milo. The fireflies settle down to rest.'}]
  if(v.book==='bird')return [
   {kind:'opening',title:'A small peep',text:v.opening?'"Peep... I cannot find my tree." Milo sits beside Bird. "We will look together."':'Milo finds a little bird on a rock. "Are you lost? Then we will find your home together."'},
-  {kind:'habitat',title:'What home looks like',text:`"I remember ${v.flower} flowers, water nearby, and a VERY tall tree." Explore the clearings with Bird.`},
+  {kind:'habitat',title:'What home looks like',text:`"I remember ${v.flower} flowers, water nearby, and a VERY tall tree." Tap a place to look with Bird.`},
   {kind:'stones',title:'Across the little stream',text:'The stepping stones take turns. Find the next stone to help us cross.'},
   {kind:'directions',title:'Remember the way',text:'Squirrel knows a path. Look at the landmarks, then follow them in the same order.'},
   {kind:'bird-movement',title:'Try your wings',text:'"I cannot fly very well yet. Can you show me how?" asks Bird.'},
