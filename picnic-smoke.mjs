@@ -1,0 +1,37 @@
+import { chromium } from '@playwright/test';
+import { spawn } from 'node:child_process';
+import assert from 'node:assert/strict';
+const server=spawn(process.execPath,['node_modules/vite/bin/vite.js','preview','--host','127.0.0.1','--port','4181','--strictPort'],{stdio:'pipe',windowsHide:true});
+let browser;
+try {
+ await new Promise((resolve,reject)=>{server.stdout.on('data',d=>{if(d.toString().includes('4181'))resolve()});server.on('error',reject);server.on('exit',c=>reject(new Error('Preview exited: '+c)));setTimeout(()=>reject(new Error('Preview startup timeout')),10000).unref()});
+ browser=await chromium.launch({channel:'msedge',headless:true});
+ const p=await browser.newPage({viewport:{width:390,height:844}});const errors=[];p.on('pageerror',e=>errors.push(e.message));p.setDefaultTimeout(7000);
+ await p.goto('http://127.0.0.1:4181');
+ const click=name=>p.getByRole('button',{name,exact:true}).click();
+ await click("Explore Milo's home");await p.getByRole('button',{name:'Picnic surprise'}).click();
+ await p.getByRole('button',{name:'Ready! Hide the food'}).waitFor();await p.waitForTimeout(4500);
+ assert.equal(await p.getByRole('img',{name:'Apple',exact:true}).count(),1,'Food stays visible until the child is ready');
+ await click('Ready! Hide the food');await click('Pear');assert.equal(await p.getByRole('button',{name:'Let’s wander on'}).count(),0);
+ await click('Look again');await p.getByRole('heading',{name:'Look what Milo brought for the picnic!'}).waitFor();
+ await click('Ready! Hide the food');await click('Carrot');
+ assert.equal(await p.getByRole('button',{name:'Let?s wander on'}).count(),0,'One remembered food must not finish the activity');
+ assert.equal(await p.getByRole('button',{name:'Carrot',exact:true}).isDisabled(),true,'A remembered food cannot count twice');
+ assert.equal(await p.getByRole('img',{name:'Carrot',exact:true}).count(),1,'Reveal the selected food, not the first slot');
+ assert.equal(await p.getByRole('img',{name:'Apple',exact:true}).count(),0);
+ await click('Apple');assert.equal(await p.getByRole('button',{name:'Let?s wander on'}).count(),0,'Two remembered foods must not finish the activity');
+ await click('Strawberry');assert.equal(await p.getByRole('button',{name:'Let?s wander on'}).count(),0,'An unrelated food cannot finish the activity');
+ await click('Banana');await p.getByRole('heading',{name:'Our picnic is ready to share!'}).waitFor();
+ assert.equal(await p.getByRole('img',{name:/Apple|Banana|Carrot/}).count(),3,'All three foods return to the blanket');
+ assert.equal(await p.getByRole('img',{name:'Apple',exact:true}).count(),1,'Successful food remains visible');
+ assert.equal(await p.evaluate(()=>document.documentElement.scrollWidth>innerWidth),false);
+ await click('Let’s wander on');await click('Grown-up settings');await p.getByRole('checkbox').check();await p.getByRole('button',{name:'Picnic surprise'}).click();
+ await click('Ready! Hide the food');await click('Carrot');await click('Carrot');await p.getByRole('heading',{name:'Let’s peek at the picnic together. Tap “Look again”.'}).waitFor();
+ await click('Look again');await click('Ready! Hide the food');await click('Apple');await p.getByRole('heading',{name:'Which food came next?'}).waitFor();assert.equal(await p.getByRole('button',{name:'Apple',exact:true}).isDisabled(),true);
+ await click('Banana');await click('Carrot');await p.getByRole('heading',{name:'Our picnic is ready to share!'}).waitFor();
+ assert.equal(await p.getByRole('img',{name:/Apple|Banana|Carrot/}).count(),3);
+ await click('Let’s wander on');await click('Grown-up settings');await p.getByRole('button',{name:'Tell a little story'}).click();
+ assert.equal(await p.getByText('Milo is listening.',{exact:false}).count(),0);
+ await click('Turn sound off');assert.equal(await p.getByRole('button',{name:'Done telling my story'}).isVisible(),true);
+ assert.deepEqual(errors,[]);console.log('PASS: child-paced picnic, wrong answers, retry, easy recall, ordered recall, visible completion, mobile layout, and speech-free storytelling.');
+} finally {await browser?.close();server.kill()}

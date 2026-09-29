@@ -1,0 +1,16 @@
+import { chromium } from '@playwright/test';
+const browser=await chromium.launch({channel:'msedge',headless:true});const p=await browser.newPage();p.setDefaultTimeout(8000);await p.goto('http://localhost:4173');
+const click=n=>p.getByRole('button',{name:n}).click();
+const open=async n=>{await click('Grown-up settings');await click(n)};
+const finish=async()=>{await p.getByRole('button',{name:'Let’s wander on'}).waitFor();await click('Let’s wander on')};
+await open('Picnic surprise');await click('Ready! Hide the food');await click('Apple');await click('Banana');await click('Carrot');await finish();
+await open('Hungry bunnies');for(let i=1;i<=3;i++){await click('Pick up 🥕');await click('Feed bunny '+i)}await p.getByRole('button',{name:'3',exact:true}).click();await finish();
+await open('Butterfly friends');await click('Different');await finish();
+await open('A sound in the bushes');await click('Play animal sound');await click('🐦 Bird');await finish();
+await open('Play with frog');for(let i=0;i<3;i++)await click('Done!');await finish();
+await open('Tell a little story');await click('Done telling my story');await finish();
+await open('Find something');for(let i=0;i<3;i++)await click('I found it!');await finish();
+await open('Tidy the cottage');for(const [v,b] of [['🍎','Food'],['🧸','Toys'],['🍌','Food'],['⚽','Toys'],['🥕','Food']]){await click('Pick up '+v);await click(b)}await finish();
+await open('Plant a little seed');for(const v of ['🌰','💧','🌱','🌻'])await p.getByRole('button',{name:v,exact:true}).click();await finish();
+await open('A rainy day');await click('Umbrella');await finish();
+await open('Forest hide-and-seek');for(let i=1;i<=3;i++)await click('Mushroom '+i);await finish();console.log('11 optional activity flows passed');await browser.close();
