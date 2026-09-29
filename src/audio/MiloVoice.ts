@@ -1,7 +1,7 @@
 import { miloAudioFiles } from './miloAudioFiles'
 
 export type MiloLine = { id: string; text: string }
-export const MILO_VOICE_SETTINGS = { pitch: 1.8, rate: 1.5, volume: .9 } as const
+export const MILO_VOICE_SETTINGS = { pitch: 1.8, rate: 1, volume: .9 } as const
 
 /** Browsers expose names/languages, not age, gender or softness. Prefer familiar gentle English voices. */
 export function selectMiloVoice(voices: SpeechSynthesisVoice[]): SpeechSynthesisVoice | undefined {
