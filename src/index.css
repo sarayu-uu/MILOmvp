@@ -16,3 +16,9 @@
 .picnic-activity .object-choice small{display:flex;align-items:center;gap:5px}
 .picnic-peek{background:#e0e7cd;border-radius:12px}
 @media(max-width:600px){.picnic-blanket{padding:20px 12px;gap:10px}.picnic-place>span{font-size:46px}.picnic-place{min-width:60px}}
+
+/* Static picture MVP: no decorative or transition animations. */
+*,*::before,*::after{animation:none!important;transition:none!important;scroll-behavior:auto!important}
+button:hover,button:active{transform:none}
+.world-art>g[filter]{filter:none}
+.app:after,.forest-world:after{display:none}

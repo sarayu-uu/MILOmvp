@@ -1,0 +1,33 @@
+import { chromium } from '@playwright/test';
+import { spawn } from 'node:child_process';
+import assert from 'node:assert/strict';
+const server=spawn(process.execPath,['node_modules/vite/bin/vite.js','preview','--host','127.0.0.1','--port','4185','--strictPort'],{stdio:'pipe',windowsHide:true});
+let browser;
+try {
+ await new Promise((resolve,reject)=>{server.stdout.on('data',d=>{if(d.toString().includes('4185'))resolve()});server.on('error',reject);server.on('exit',c=>reject(new Error('Preview exited '+c)))});
+ browser=await chromium.launch({channel:'msedge',headless:true});const p=await browser.newPage({viewport:{width:1366,height:900},reducedMotion:'reduce'});p.setDefaultTimeout(8000);const errors=[];p.on('pageerror',e=>errors.push(e.message));
+ const click=name=>p.getByRole('button',{name,exact:true}).click();
+ const arrive=async id=>p.waitForFunction(id=>document.querySelector('.forest-scene')?.getAttribute('data-current-stop')===id&&document.querySelector('.forest-scene')?.getAttribute('data-travelling')==='false',id);
+ const talk=async()=>{while(await p.getByRole('button',{name:'And then?',exact:true}).count())await click('And then?')};
+ const settled=async name=>p.locator(`[data-animal="${name}"]`).getAttribute('data-settled');
+ const onward=async id=>{await talk();await click('Follow the path');await arrive(id);await talk()};
+ await p.goto('http://127.0.0.1:4185');await click('Follow the forest path');await click('Turn sound off');await talk();await click('Follow the path');await arrive('frog');await talk();
+ assert.equal(await p.getByRole('button',{name:'Follow the path',exact:true}).count(),0);assert.equal(await settled('frog'),'false');
+ for(let i=0;i<4;i++)await click('Done');await click('3 jumps');assert.equal(await settled('frog'),'false');await p.getByText('Hmm... look at the pairs:',{exact:false}).waitFor();await p.screenshot({path:'forest-play-frog.png'});await click('2 jumps');await click('On across the stones');assert.equal(await settled('frog'),'true');
+ await onward('bear');await click('Done');await click('Done');await click('High branch');assert.equal(await settled('bear'),'false');await p.getByText('Hmm... that is a long reach.',{exact:false}).waitFor();await click('Low branch');await click('High branch');assert.equal(await p.getByRole('button',{name:'Enjoy your honey, Bear'}).count(),0);await p.screenshot({path:'forest-play-bear.png'});
+ // Branches also work with keyboard focus.
+ await p.getByRole('button',{name:'Middle branch',exact:true}).focus();await p.keyboard.press('Enter');await click('High branch');await click('Enjoy your honey, Bear');assert.equal(await settled('bear'),'true');
+ await onward('baby-snake');await click('Left');assert.equal(await settled('snake'),'false');await click('Right');await click('Done');assert.equal(await p.getByRole('button',{name:'I tried my movement',exact:true}).isDisabled(),true);await click('Curl');await click('Wiggle');await p.screenshot({path:'forest-play-snake.png'});await click('I tried my movement');await click('Follow the bend');
+ await onward('squirrel');await click('Ready to remember');await click('Look under Flowers');assert.equal(await settled('squirrel'),'false');await click('Look again');await click('Ready to remember');await click('Look under Rock');assert.equal(await p.getByRole('button',{name:'Look under Rock',exact:true}).isDisabled(),true);await click('Look under Stump');await click('Hide three acorns');await p.setViewportSize({width:390,height:844});await p.screenshot({path:'forest-play-squirrel-mobile.png'});await click('Ready to remember');for(const place of ['Flowers','Stump','Bush'])await click('Look under '+place);await click('Safe and snug, Squirrel');
+ await onward('owl');const answers=['Water','Leaves','Frog','Wings'];const reasons=['A stream over stones','Wind in the branches','Frog beside the puddle','A bird flying toward the nest'];
+ for(let i=0;i<4;i++) { assert.equal(await p.getByRole('button',{name:answers[i],exact:true}).isDisabled(),true);await click('Read a sound clue');if(i===0){await click('Wings');assert.equal(await settled('owl'),'false')}await click(answers[i]);if(i===0){await click('A sleepy bear');assert.equal(await settled('owl'),'false');await p.screenshot({path:'forest-play-owl-mobile.png'})}await click(reasons[i]);await click(i===3?'Follow the wing sounds':'Another forest sound') }
+ assert.equal(await settled('owl'),'true');const saved=await p.evaluate(()=>JSON.parse(localStorage.getItem('milo-forest-world-v1')));assert.deepEqual(saved.completed,[1,2,3,4,5]);
+ await p.reload();await click('Follow the forest path');await arrive('owl');assert.equal(await p.locator('.animal-play').count(),0);await talk();await click('Follow the path');await arrive('discovery');
+ // Old scripted-preview saves must not bypass an unplayed activity.
+ await p.evaluate(()=>localStorage.setItem('milo-forest-world-v1',JSON.stringify({current:2,furthest:5,resolved:[1,2,3,4,5],line:5})));await p.reload();await click('Follow the forest path');await p.getByRole('region',{name:'bear activity'}).waitFor();assert.equal(await settled('bear'),'false');
+ for(const [width,height] of [[390,844],[844,390],[768,1024],[1366,900]]) { await p.setViewportSize({width,height});await p.waitForTimeout(100);assert.equal(await p.evaluate(()=>document.documentElement.scrollWidth>innerWidth||document.documentElement.scrollHeight>innerHeight),false);await p.getByRole('button',{name:'Done',exact:true}).scrollIntoViewIfNeeded() }
+ // Real audio path, replay, mute, and teardown; captions remain an alternative.
+ await p.evaluate(()=>localStorage.setItem('milo-forest-world-v1',JSON.stringify({current:5,furthest:5,resolved:[],completed:[],line:3})));await p.reload();await click('Follow the forest path');if(await p.getByRole('button',{name:'Turn sound on',exact:true}).count())await click('Turn sound on');await click('Listen to the forest');await p.locator('.is-listening').waitFor();await click('Play sound again');await click('Turn sound off');assert.equal(await p.locator('.is-listening').count(),0);await click('Read a sound clue');await click('Water');await click('A stream over stones');await click('Another forest sound');
+ await click('Return to world');await click('Grown-up settings');await click('Restart session');assert.equal(await p.evaluate(()=>localStorage.getItem('milo-forest-world-v1')),null);
+ assert.deepEqual(errors,[]);console.log('PASS: five animal activities, gentle retries, gated progress, sequential Bear climb, Snake invention, both memory rounds, Owl audio and deduction, persistence, old-save migration, keyboard, responsive layout, mute and restart.');
+} finally { await browser?.close();server.kill() }

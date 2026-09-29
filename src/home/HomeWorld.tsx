@@ -1,3 +1,4 @@
+import { narrate, stopNarration } from '../narration'
 import { useEffect, useRef, useState } from 'react'
 import type { PointerEvent as ReactPointerEvent, ReactNode } from 'react'
 import { ArrowLeft, Globe2, Volume2, VolumeX } from 'lucide-react'
@@ -24,9 +25,9 @@ const cameras: Record<Room, number[]> = {
 }
 const toyList: { id: string; kind: Thing; x: number; y: number; size: number }[] = [
   { id: 'teddy', kind: 'teddy', x: 260, y: 505, size: 58 },
-  { id: 'ball', kind: 'ball', x: 470, y: 543, size: 48 },
+  { id: 'ball', kind: 'ball', x: 437, y: 551, size: 44 },
   { id: 'blocks', kind: 'blocks', x: 333, y: 550, size: 52 },
-  { id: 'car', kind: 'car', x: 416, y: 493, size: 53 },
+  { id: 'car', kind: 'car', x: 404, y: 497, size: 53 },
   { id: 'puzzle', kind: 'puzzle', x: 248, y: 563, size: 42 },
 ]
 const routines: { id: Thing; label: string }[] = [
@@ -109,36 +110,20 @@ export function HomeWorld({ hard, sound, onSound, onWorld, onPicnic, onStory, on
   const [inspected, setInspected] = useState(false)
   const [happy, setHappy] = useState(false)
   const [mission, setMission] = useState(false)
-  const [view, setView] = useState(cameras.house)
-  const viewRef = useRef(view)
+  const view = cameras[room]
   const viewport = useRef<HTMLDivElement>(null)
   const readRef = useRef<(text: string) => void>(() => {})
-  const speak = (text: string) => {
-    if (sound && 'speechSynthesis' in window) { speechSynthesis.cancel(); const voice = new SpeechSynthesisUtterance(text); voice.rate = .82; voice.pitch = 1.1; speechSynthesis.speak(voice) }
-  }
+  const speak = (text: string) => { if (sound) narrate(text) }
   useEffect(() => { readRef.current = speak })
   useEffect(() => {
     const timer = setTimeout(() => readRef.current(home.sleeping ? 'Milo is resting. The house is quiet.' : 'We’re home! What should we do?'), 650)
-    return () => { clearTimeout(timer); window.speechSynthesis?.cancel() }
+    return () => { clearTimeout(timer); stopNarration() }
     // Entry greeting is spoken once, not after each interaction.
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [])
   useEffect(() => { try { localStorage.setItem(STORAGE, JSON.stringify(home)) } catch { /* Play still works without storage. */ } }, [home])
   useEffect(() => {
-    const target = cameras[room], initial = viewRef.current
-    const duration = window.matchMedia('(prefers-reduced-motion: reduce)').matches ? 0 : 650
-    let frame = 0
-    const began = performance.now()
-    const animate = (now: number) => {
-      const progress = duration === 0 ? 1 : Math.min(1, (now - began) / duration)
-      const eased = 1 - Math.pow(1 - progress, 3)
-      const next = initial.map((v, i) => v + (target[i] - v) * eased)
-      viewRef.current = next; setView(next)
-      if (progress < 1) frame = requestAnimationFrame(animate)
-    }
-    frame = requestAnimationFrame(animate)
     if (viewport.current) viewport.current.scrollLeft = room === 'house' ? (viewport.current.scrollWidth - viewport.current.clientWidth) / 2 : 0
-    return () => cancelAnimationFrame(frame)
   }, [room])
   useEffect(() => {
     if (!happy) return
@@ -185,7 +170,7 @@ export function HomeWorld({ hard, sound, onSound, onWorld, onPicnic, onStory, on
   const sleeping = home.sleeping || routineFrame === 3
   const foodKinds: Thing[] = home.foodGoal === 5 ? ['apple', 'apple', 'apple', 'banana', 'banana', 'banana', 'banana', 'strawberry', 'strawberry'] : Array(6).fill('berry')
   const miloPosition = room === 'bedroom' ? activity === 'bed' ? { x: 345, y: 229, w: 110 } : { x: 537, y: 234, w: 115 }
-    : room === 'play' ? { x: 474, y: 446, w: 75 } : room === 'kitchen' ? { x: 895, y: 511, w: 81 }
+    : room === 'play' ? { x: 468, y: 489, w: 77 } : room === 'kitchen' ? { x: 895, y: 511, w: 81 }
     : room === 'bathroom' ? { x: 811, y: 280, w: 77 } : room === 'garden' ? { x: 470, y: 647, w: 102 }
     : { x: 496, y: 650, w: 111 }
   const displayMilo = home.sleeping || routineFrame >= 2 ? { x: 342, y: 244, w: 102 } : miloPosition

@@ -25,12 +25,12 @@ try {
  assert.equal(await p.getByRole('img',{name:/Apple|Banana|Carrot/}).count(),3,'All three foods return to the blanket');
  assert.equal(await p.getByRole('img',{name:'Apple',exact:true}).count(),1,'Successful food remains visible');
  assert.equal(await p.evaluate(()=>document.documentElement.scrollWidth>innerWidth),false);
- await click('Let’s wander on');await click('Grown-up settings');await p.getByRole('checkbox').check();await p.getByRole('button',{name:'Picnic surprise'}).click();
+ await click('Let’s wander on');if(await p.locator('.home-world').count())await click('Back to world');await click('Grown-up settings');await p.getByRole('checkbox').check();await p.getByRole('button',{name:'Picnic surprise'}).click();
  await click('Ready! Hide the food');await click('Carrot');await click('Carrot');await p.getByRole('heading',{name:'Let’s peek at the picnic together. Tap “Look again”.'}).waitFor();
  await click('Look again');await click('Ready! Hide the food');await click('Apple');await p.getByRole('heading',{name:'Which food came next?'}).waitFor();assert.equal(await p.getByRole('button',{name:'Apple',exact:true}).isDisabled(),true);
  await click('Banana');await click('Carrot');await p.getByRole('heading',{name:'Our picnic is ready to share!'}).waitFor();
  assert.equal(await p.getByRole('img',{name:/Apple|Banana|Carrot/}).count(),3);
- await click('Let’s wander on');await click('Grown-up settings');await p.getByRole('button',{name:'Tell a little story'}).click();
+ await click('Let’s wander on');if(await p.locator('.home-world').count())await click('Back to world');await click('Grown-up settings');await p.getByRole('button',{name:'Tell a little story'}).click();
  assert.equal(await p.getByText('Milo is listening.',{exact:false}).count(),0);
  await click('Turn sound off');assert.equal(await p.getByRole('button',{name:'Done telling my story'}).isVisible(),true);
  assert.deepEqual(errors,[]);console.log('PASS: child-paced picnic, wrong answers, retry, easy recall, ordered recall, visible completion, mobile layout, and speech-free storytelling.');
