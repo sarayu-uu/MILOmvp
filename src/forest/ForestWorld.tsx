@@ -18,7 +18,7 @@ function cameraFor(index: number, aspect: number): View {
 }
 
 /** Continuous forest environment with child-paced animal encounters. */
-export function ForestWorld({ sound, onSound, onWorld, onHome }: { sound: boolean; onSound: () => void; onWorld: () => void; onHome: () => void }) {
+export function ForestWorld({ sound, onSound, onWorld, onHome, onStory }: { sound: boolean; onSound: () => void; onWorld: () => void; onHome: () => void; onStory: () => void }) {
   const [progress, setProgress] = useState(readForestProgress)
   const [aspect, setAspect] = useState(1.65)
   const moving = false
@@ -37,7 +37,8 @@ export function ForestWorld({ sound, onSound, onWorld, onHome }: { sound: boolea
   const restored = progress.resolved.includes(7)
   const finalVisible = progress.furthest >= 6 || destination === 6 || destination === 7
 
-  function speak(text: string) { if (sound) narrate(text) }
+  const narrationId = line.reveal ? 'milo.clueFound' : `milo.forest.${stop.id}.${progress.line === 0 ? 'intro' : 'line.' + progress.line}`
+  function speak(text: string) { if (sound) narrate(text, narrationId) }
 
   useEffect(() => {
     const element = container.current
@@ -54,8 +55,8 @@ export function ForestWorld({ sound, onSound, onWorld, onHome }: { sound: boolea
   }, [progress])
 
   useEffect(() => {
-    if (sound && !activityActive) return narrate(line.text)
-  }, [line.text, sound, activityActive])
+    if (sound && !activityActive) return narrate(line.text, narrationId)
+  }, [line.text, narrationId, sound, activityActive])
 
   function travel(index: number) {
     if (index < 0 || index >= journeyStops.length || index === progress.current) return
@@ -133,6 +134,7 @@ export function ForestWorld({ sound, onSound, onWorld, onHome }: { sound: boolea
         {moving ? 'On our way…' : finished ? 'Walk home' : atLastLine ? progress.current === 6 ? 'To the Story Tree' : 'Follow the path' : 'And then?'}
         {finished ? <Home size={18}/> : <ArrowRight size={18}/>}</button>
     </section>}
+    {finished && <button className="forest-play-again" onClick={onStory}>Read beneath the Story Tree</button>}
     <p className="forest-bottom-note">{restored ? 'A little light for everyone.' : 'There’s a little wonder around every bend.'}</p>
     <span className="sr-only" aria-live="polite">{moving ? `Walking toward ${destinationText}` : `Milo is at ${stop.place}`}</span>
   </main>

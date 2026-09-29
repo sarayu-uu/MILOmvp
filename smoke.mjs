@@ -1,8 +1,8 @@
-﻿import { chromium } from '@playwright/test';
+import { chromium } from '@playwright/test';
 const browser=await chromium.launch({channel:'msedge',headless:true});
 const page=await browser.newPage({viewport:{width:1440,height:900}});
 page.setDefaultTimeout(10000);const errors=[];page.on('pageerror',e=>errors.push(e.message));page.on('console',m=>{if(m.type()==='error')errors.push(m.text())});
-await page.goto('http://localhost:4173');await page.getByRole('button',{name:'Follow the forest path'}).waitFor();await page.screenshot({path:'world-desktop.png'});
+await page.goto('http://localhost:4173');await page.getByRole('button',{name:'Follow the forest path'}).waitFor();await page.screenshot({path:'images/world-desktop.png'});
 await page.getByRole('button',{name:'Grown-up settings'}).click();
 await page.getByRole('button',{name:'Original plant and bridge adventure'}).click();
 await page.getByRole('button',{name:'Under a cloud'}).click();await page.getByRole('button',{name:'Sunlight'}).click();
@@ -14,7 +14,7 @@ await page.getByRole('button',{name:'Mouse'}).click();await page.getByRole('butt
 for(const name of ['Find footprints','Follow footprints','Find mouse'])await page.getByRole('button',{name,exact:false}).click();await page.getByRole('button',{name:'Walk home with Milo'}).click();
 await page.getByRole('heading',{name:'See you next adventure.'}).waitFor();
 console.log('Main adventure completed',errors);
-await page.getByRole('button',{name:'Milo\'s world'}).click();await page.setViewportSize({width:390,height:844});await page.screenshot({path:'world-mobile.png'});
+await page.getByRole('button',{name:'Milo\'s world'}).click();await page.setViewportSize({width:390,height:844});await page.screenshot({path:'images/world-mobile.png'});
 console.log('Overflow',await page.evaluate(()=>document.documentElement.scrollWidth>innerWidth));await browser.close();
 
 

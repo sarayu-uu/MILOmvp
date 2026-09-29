@@ -339,6 +339,6 @@ export function HomeWorld({ hard, sound, onSound, onWorld, onPicnic, onStory, on
       tell(activity==='food'?`Can you put ${goal} ${goal<5?'berries':'pieces of fruit'} on my plate?`:activity==='toys'?'A fresh jumble! Can you put the toys away?':activity==='plant'?'Let us care for another thirsty plant. Check the soil first.':activity==='wardrobe'?'Find my raincoat among these clothes.': 'Put our bedtime pictures in order again.')
     }}>Play again</button>}
     <p id="home-drag-help" className="sr-only">Drag an object to its destination with your finger or mouse. With a keyboard, press Enter to pick it up, use arrow keys to move it, and press Enter to place it. Escape puts it back.</p>
-    {room === 'house' && <p className="home-explore-note">A house full of little things to discover.<span>Swipe sideways to look around.</span></p>}
+    {room === 'house' && <p className="home-explore-note">Tap a room to explore up close.</p>}
   </main>
 }

@@ -1,3 +1,6 @@
+import { useRecall } from '../play/useRecall'
+import { scheduleForestSound } from '../audio/forestSounds'
+import { dialogueId } from '../audio/MiloVoice'
 import { freshShuffle } from '../variation'
 import { narrate, stopNarration } from '../narration'
 import { useEffect, useRef, useState } from 'react'
@@ -14,13 +17,13 @@ function Friend({ kind, className = '' }: { kind: PlayAnimal; className?: string
 function Frame({ kind, title, text, children, sound }: { kind: PlayAnimal; title: string; text: string; children: ReactNode; sound: boolean }) {
   const heading = useRef<HTMLHeadingElement>(null)
   useEffect(() => { heading.current?.focus({ preventScroll: true }) }, [])
-  useEffect(() => { if (sound) return narrate(text) }, [sound, text])
+  useEffect(() => { if (sound) return narrate(text, `milo.forest.${kind}.activity.${dialogueId(text).split(".").pop()}`) }, [sound, text, kind])
   return <section className="animal-play" aria-label={`${kind} activity`}>
     <div className="play-intro"><Friend kind={kind}/><div><h2 ref={heading} tabIndex={-1}>{title}</h2><p aria-live="polite">{text}</p></div></div>
     {children}
   </section>
 }
-function Action({ children, onClick, disabled = false }: { children: ReactNode; onClick: () => void; disabled?: boolean }) {
+export function Action({ children, onClick, disabled = false }: { children: ReactNode; onClick: () => void; disabled?: boolean }) {
   return <button className="play-action" onClick={onClick} disabled={disabled}>{children}</button>
 }
 
@@ -86,17 +89,17 @@ function PlaceArt({ index, acorn }: { index: number; acorn: boolean }) {
   return <svg viewBox="0 0 130 95" aria-hidden="true"><ellipse cx="65" cy="79" rx="54" ry="9" fill="#c3cbaa"/>{index === 0 ? <path d="M20 73L31 43l39-13 33 22 7 24Z" fill="#9ca99b"/> : index === 1 ? <g stroke="#91a16e" strokeWidth="4">{[37,65,91].map(x => <g key={x}><path d={`M${x} 78V35`}/><circle cx={x} cy="34" r="15" fill="#e2cea1"/><circle cx={x} cy="34" r="5" fill="#b9a477"/></g>)}</g> : index === 2 ? <><path d="M34 40h59l10 38H25Z" fill="#ad9775"/><ellipse cx="63" cy="41" rx="30" ry="12" fill="#d8c5a0"/><ellipse cx="63" cy="41" rx="17" ry="6" fill="none" stroke="#b69c76"/></> : <g fill="#8da77b"><circle cx="35" cy="60" r="24"/><circle cx="65" cy="45" r="30"/><circle cx="94" cy="61" r="23"/></g>}{acorn && <g transform="translate(51 57)"><path d="M0 9h26q-1 29-13 30Q0 33 0 9" fill="#c9a574"/><path d="M-3 11q16-22 32 0v6H-3Z" fill="#827153"/><path d="M13 0l3-6" stroke="#827153" strokeWidth="3"/></g>}</svg>
 }
 function Squirrel({ sound, onComplete }: Props) {
-  const [round, setRound] = useState(0), [show, setShow] = useState(true), [found, setFound] = useState<number[]>([]), [hint, setHint] = useState<number | null>(null)
+  const [round, setRound] = useState(0)
   const [locations] = useState(() => [freshShuffle('acorns-two', [0,1,2,3]).slice(0,2), freshShuffle('acorns-three', [0,1,2,3]).slice(0,3)])
   const targets = locations[round]
-  const done = found.length === targets.length
+  const {show,setShow,found,setFound,hint,setHint,done,choose} = useRecall(targets)
   useEffect(() => {
     if (!show) return
     const timer = window.setTimeout(() => setShow(false), 6500)
     return () => clearTimeout(timer)
-  }, [show, round])
+  }, [show, round, setShow])
   return <Frame kind="squirrel" title="Where did I tuck them?" text={done ? round === 0 ? 'My two acorns! Shall we try three little hiding places?' : 'All three! My winter snack is safe. Thank you!' : show ? `Here are ${targets.length} acorns. Have a good look. I always forget where I put things!` : 'Now where were they? Peek beneath the places you remember.'} sound={sound}>
-    <div className="acorn-clearing">{hidingPlaces.map((name, i) => <button key={name} className={`${found.includes(i) ? 'acorn-found' : ''} ${hint === i ? 'rustling-place' : ''}`} disabled={show || done || found.includes(i)} aria-label={`Look under ${name}`} onClick={() => { if (targets.includes(i)) { setFound(v => [...v, i]); setHint(null) } else setHint(i) }}><PlaceArt index={i} acorn={(show && targets.includes(i)) || found.includes(i)}/><span>{name}</span>{found.includes(i) && <small>Acorn found</small>}</button>)}</div>
+    <div className="acorn-clearing">{hidingPlaces.map((name, i) => <button key={name} className={`${found.includes(i) ? 'acorn-found' : ''} ${hint === i ? 'rustling-place' : ''}`} disabled={show || done || found.includes(i)} aria-label={`Look under ${name}`} onClick={() => choose(i)}><PlaceArt index={i} acorn={(show && targets.includes(i)) || found.includes(i)}/><span>{name}</span>{found.includes(i) && <small>Acorn found</small>}</button>)}</div>
     <p className="play-hint" role="status">{hint !== null ? 'Just a little rustle here. Shall we look at the hiding places again?' : `${found.length} of ${targets.length} acorns tucked safely away.`}</p>
     <div className="play-actions">{done ? <Action onClick={() => { if (round === 0) { setRound(1); setFound([]); setShow(true); setHint(null) } else onComplete() }}>{round === 0 ? 'Hide three acorns' : 'Safe and snug, Squirrel'}</Action> : show ? <Action onClick={() => setShow(false)}>Ready to remember</Action> : <Action onClick={() => { setShow(true); setFound([]); setHint(null) }}>Look again</Action>}</div>
   </Frame>
@@ -121,14 +124,7 @@ function Owl({ sound, onComplete }: Props) {
       if (context.current !== ctx) return
       setPlaying(true)
       // Soft synthesized environmental cues, generated locally without downloads.
-      const now = ctx.currentTime
-      if (soundIndex === 2) {
-        for (let i = 0; i < 3; i++) { const osc = ctx.createOscillator(), gain = ctx.createGain(); osc.type = 'sawtooth'; osc.frequency.setValueAtTime(170, now+i*.65); osc.frequency.exponentialRampToValueAtTime(85, now+i*.65+.22); gain.gain.setValueAtTime(0,now+i*.65); gain.gain.linearRampToValueAtTime(.07,now+i*.65+.04); gain.gain.exponentialRampToValueAtTime(.001,now+i*.65+.3); osc.connect(gain).connect(ctx.destination); osc.start(now+i*.65); osc.stop(now+i*.65+.32) }
-      } else {
-        const buffer = ctx.createBuffer(1, ctx.sampleRate*2.4, ctx.sampleRate), data = buffer.getChannelData(0)
-        for (let i=0;i<data.length;i++) { const t=i/ctx.sampleRate; const envelope=soundIndex===3 ? Math.pow(Math.max(0,Math.sin(t*19)),4) : soundIndex===1 ? .35+.3*Math.sin(t*8) : .6+.2*Math.sin(t*32); data[i]=(Math.random()*2-1)*envelope*Math.min(t*6,1,(2.4-t)*5) }
-        const source=ctx.createBufferSource(), filter=ctx.createBiquadFilter(), gain=ctx.createGain(); source.buffer=buffer; filter.type=soundIndex===0?'bandpass':'lowpass'; filter.frequency.value=soundIndex===0?1100:soundIndex===1?2600:450; gain.gain.value=.32; source.connect(filter).connect(gain).connect(ctx.destination); source.start()
-      }
+      scheduleForestSound(ctx, soundIndex)
       timer.current=window.setTimeout(stopAudio,2500)
     } catch { stopAudio(); setCaption(true) }
   }
