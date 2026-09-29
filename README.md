@@ -31,12 +31,12 @@ The cottage and Home icon open a separate cutaway dollhouse. Tap a room or its o
 The five priority interactions are built into the illustrated rooms:
 
 - Toy chest: drag five toys into the box, revealing Milo's boots.
-- Kitchen counter: drag exactly four individual berries to the plate, or any combination of five fruits in the harder setting.
+- Kitchen counter: drag three or four individual berries to the plate, or five or six fruits in the harder setting. The current target appears in Milo’s instruction.
 - Plant: inspect the dry soil, then drag the watering can over it. Later visits reveal a new leaf and a flower.
 - Wardrobe: notice the rainy window, open the doors, and drag a raincoat onto Milo. The boots lead naturally to the play corner.
 - Bed: drag the four routine objects onto the quilt in order, then watch teeth brushing, pajamas, a story, and sleep. The home darkens.
 
-The existing Milo component is unchanged; clothing is a separate SVG accessory layer. Toys, food, clothing, plant growth, and bedtime persist in `milo-home-v1` in localStorage. The grown-up Restart session control resets both the home and session notes. The illustrated picnic basket still opens the three-food memory activity, and the bookshelf opens the existing story with a route back home. The round ball offers a short real-world mission. Bathroom and laundry artwork are scenery for this first home release, not additional finished activities.
+The existing Milo component is unchanged; clothing is a separate SVG accessory layer. Toys, food, clothing, plant growth, and bedtime persist in `milo-home-v1` in localStorage. The grown-up Restart session control resets both the home and session notes. The illustrated picnic basket still opens the three-food memory activity, and the bookshelf opens the existing story with a route back home. The round ball offers a varied real-world finding mission. Bathroom and laundry artwork are scenery for this first home release, not additional finished activities.
 
 Pointer dragging supports mouse, pen, and touch. Keyboard users can focus an object, press Enter to pick it up, move it with arrow keys, and press Enter to drop; Escape cancels. Room views change immediately; decorative motion is disabled.
 
@@ -55,3 +55,9 @@ Run `node forest-activities-smoke.mjs` after building for the animal activity re
 ## Static pictures and responsive narration
 
 Frog uses ground / air / landing pictures linked by a dotted jump path. Bear asks children to stretch, tap Done, then select reachable branches in order; branch selections update the picture immediately. Full-scene procedural filters have been disabled to reduce rendering work. Narration is scheduled after two animation frames and a task boundary so the UI can paint first; newer requests replace pending speech. `node forest-responsiveness-smoke.mjs` checks paint-before-speech ordering with a speech test double, rapid clicks, and the absence of active animations. Native speech still depends on the browser and installed voice.
+
+## Fresh activity variations
+
+Activity entry and explicit replay create a fresh configuration. Counts, alternating patterns, answer positions, hiding places, illustrated branch layouts, sound order, object locations, story props, color sequences and finding prompts vary. Each configuration stays fixed during an attempt, including retries and Look again. Picnic keeps the same three familiar foods, with shuffled order and choices. Owl keeps wings last so its clue still leads to the nest. Story chronology and sensible care routines remain coherent; their choices shuffle.
+
+Completed forest encounters offer Play with the animal again. Completed home tasks offer Play again, resetting only that task and keeping the rest of the home progress. No animations or extra rendering loops were introduced. Variation history is stored locally to reduce immediate repeats; no online service is needed.

@@ -1,4 +1,5 @@
-﻿import {chromium} from '@playwright/test';
+import {solveForestActivity} from './forest-test-helpers.mjs';
+import {chromium} from '@playwright/test';
 import {spawn} from 'node:child_process';
 import assert from 'node:assert/strict';
 const server=spawn(process.execPath,['node_modules/vite/bin/vite.js','preview','--host','127.0.0.1','--port','4184','--strictPort'],{stdio:'pipe',windowsHide:true});let browser;
@@ -11,12 +12,7 @@ try{
  const finishDialogue=async()=>{
   while(await p.getByRole('button',{name:'And then?',exact:true}).count())await click('And then?');
   if(!(await p.locator('.animal-play').count()))return;
-  const id=await stop();
-  if(id==='frog'){for(let i=0;i<4;i++)await click('Done');await click('2 jumps');await click('On across the stones')}
-  if(id==='bear'){await click('Done');await click('Done');for(const name of ['Low branch','Middle branch','High branch','Enjoy your honey, Bear'])await click(name)}
-  if(id==='baby-snake'){await click('Right');await click('Done');await click('I invented a different movement');await click('Follow the bend')}
-  if(id==='squirrel'){await click('Ready to remember');await click('Look under Rock');await click('Look under Stump');await click('Hide three acorns');await click('Ready to remember');for(const name of ['Flowers','Stump','Bush'])await click('Look under '+name);await click('Safe and snug, Squirrel')}
-  if(id==='owl'){const sounds=['Water','Leaves','Frog','Wings'],causes=['A stream over stones','Wind in the branches','Frog beside the puddle','A bird flying toward the nest'];for(let i=0;i<4;i++){await click('Read a sound clue');await click(sounds[i]);await click(causes[i]);await click(i===3?'Follow the wing sounds':'Another forest sound')}}
+  await solveForestActivity(p);
   await finishDialogue();
  };
  await p.goto('http://127.0.0.1:4184');await click('Follow the forest path');await p.locator('.forest-scene').waitFor();await click('Turn sound off');await p.waitForTimeout(200);await p.screenshot({path:'forest-entrance.png'});

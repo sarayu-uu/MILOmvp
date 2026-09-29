@@ -7,7 +7,7 @@ await page.getByRole('button',{name:'Grown-up settings'}).click();
 await page.getByRole('button',{name:'Original plant and bridge adventure'}).click();
 await page.getByRole('button',{name:'Under a cloud'}).click();await page.getByRole('button',{name:'Sunlight'}).click();
 await page.getByRole('button',{name:'A dry little patch'}).click();await page.getByRole('button',{name:'Water'}).click();await page.getByRole('button',{name:'Let’s wander on'}).click();
-await page.getByRole('button',{name:'blue piece'}).click();await page.getByRole('button',{name:'Missing piece'}).click();await page.getByRole('button',{name:'yellow piece'}).click();await page.getByRole('button',{name:'Missing piece'}).click();await page.getByRole('button',{name:'Let’s wander on'}).click();
+for(let stage=0;stage<2;stage++){const stones=page.locator('.bridge .stone:not(.gap)');const target=await stones.nth(stage===0?1:0).evaluate(el=>el.style.background);const option=page.locator('.choice-stone');const options=await option.evaluateAll(nodes=>nodes.map(n=>({color:n.style.background,name:n.getAttribute('aria-label')})));await page.getByRole('button',{name:options.find(n=>n.color===target).name,exact:true}).click();await page.getByRole('button',{name:'Missing piece'}).click()}await page.getByRole('button',{name:'Let’s wander on'}).click();
 await page.getByRole('button',{name:'I found it!'}).click();await page.getByRole('button',{name:'Soft'}).click();await page.getByRole('button',{name:'Let’s wander on'}).click();
 for(let i=0;i<3;i++)await page.getByRole('button',{name:'Then what happened?'}).click();
 await page.getByRole('button',{name:'Mouse'}).click();await page.getByRole('button',{name:'Tiny footprints'}).click();await page.getByRole('button',{name:'Remember our story'}).click();

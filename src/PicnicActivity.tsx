@@ -1,3 +1,4 @@
+import { freshShuffle } from './variation'
 import { useEffect, useState } from 'react'
 import { Check, Leaf } from 'lucide-react'
 
@@ -21,7 +22,8 @@ export function PicnicActivity({ hard, onInstruction, onHint, onComplete }: {
   const [phase, setPhase] = useState<'look' | 'remember' | 'finished'>('look')
   const [recalled, setRecalled] = useState<Food[]>([])
   const [misses, setMisses] = useState(0)
-  const sequence = picnic
+  const [sequence] = useState(() => freshShuffle('picnic-foods', picnic))
+  const [options] = useState(() => freshShuffle('picnic-choices', choices))
   const instruction = phase === 'look'
     ? hard ? 'Look at our picnic foods, from left to right.' : 'Look what Milo brought for the picnic!'
     : phase === 'finished' ? 'Our picnic is ready to share!'
@@ -67,7 +69,7 @@ export function PicnicActivity({ hard, onInstruction, onHint, onComplete }: {
     </>}
     {phase === 'remember' && <>
       <div className="choices" aria-label="Choose the missing food">
-        {choices.map(food =>
+        {options.map(food =>
           <button className="object-choice" key={food} aria-label={foods[food].label}
             disabled={recalled.includes(food)} onClick={() => select(food)}>
             <span aria-hidden="true">{foods[food].picture}</span>

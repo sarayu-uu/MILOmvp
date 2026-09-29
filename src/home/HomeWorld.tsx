@@ -1,3 +1,4 @@
+import { freshShuffle } from '../variation'
 import { narrate, stopNarration } from '../narration'
 import { useEffect, useRef, useState } from 'react'
 import type { PointerEvent as ReactPointerEvent, ReactNode } from 'react'
@@ -102,6 +103,9 @@ export function HomeWorld({ hard, sound, onSound, onWorld, onPicnic, onStory, on
   onRecord: (activity: string, event: 'attempt' | 'complete' | 'hint') => void
 }) {
   const [home, setHome] = useState(loadHome)
+  const makeVariation = () => ({ toys: freshShuffle('home-toys',[0,1,2,3,4]), clothing: freshShuffle('home-clothes',[0,1,2]), routine: freshShuffle('home-routine',[0,1,2,3]), food: freshShuffle('home-fruit',[0,1,2,3,4,5,6,7,8]), canX: freshShuffle('home-can',[333,390,420])[0] })
+  const [variation, setVariation] = useState(makeVariation)
+  const scatteredToys = toyList.map((toy,i) => ({...toy,x:toyList[variation.toys[i]].x,y:Math.min(toyList[variation.toys[i]].y,603-toy.size)}))
   const [room, setRoom] = useState<Room>('house')
   const [activity, setActivity] = useState<Activity>(null)
   const [dialogue, setDialogue] = useState(() => home.sleeping ? 'Milo is resting. The house is quiet.' : 'We’re home! What should we do?')
@@ -110,6 +114,7 @@ export function HomeWorld({ hard, sound, onSound, onWorld, onPicnic, onStory, on
   const [inspected, setInspected] = useState(false)
   const [happy, setHappy] = useState(false)
   const [mission, setMission] = useState(false)
+  const [missionWord, setMissionWord] = useState('round')
   const view = cameras[room]
   const viewport = useRef<HTMLDivElement>(null)
   const readRef = useRef<(text: string) => void>(() => {})
@@ -152,9 +157,9 @@ export function HomeWorld({ hard, sound, onSound, onWorld, onPicnic, onStory, on
     if (nextActivity) onRecord(`Home: ${nextActivity}`, 'attempt')
     if (nextActivity === 'toys') tell(home.toys.length === toyList.length ? 'Everything has a home. There are my boots!' : 'Oops… toys everywhere! Drag them into the toy box.')
     else if (nextActivity === 'food') {
-      const goal = home.plate.length ? home.foodGoal : hard ? 5 : 4
+      const goal = home.plate.length ? home.foodGoal : freshShuffle('home-count-'+hard, hard ? [5,6] : [3,4])[0]
       setHome(h => ({ ...h, foodGoal: goal }))
-      tell(home.plate.length === goal ? 'Just enough for a lovely snack. Thank you!' : `I’m hungry! Can you put ${goal} ${goal === 4 ? 'berries' : 'pieces of fruit'} on my plate?`)
+      tell(home.plate.length === goal ? 'Just enough for a lovely snack. Thank you!' : `I’m hungry! Can you put ${goal} ${goal < 5 ? 'berries' : 'pieces of fruit'} on my plate?`)
     } else if (nextActivity === 'plant') {
       setInspected(false)
       if (home.watered) { setHome(h => ({ ...h, watered: Math.min(3, h.watered + 1) })); tell(home.watered >= 2 ? 'A flower! Our little plant is growing.' : 'Look, a new leaf! Our plant remembers your care.') }
@@ -168,7 +173,7 @@ export function HomeWorld({ hard, sound, onSound, onWorld, onPicnic, onStory, on
   const fullyTidy = home.toys.length === toyList.length
   const isActive = (r: Room) => room === 'house' || room === r
   const sleeping = home.sleeping || routineFrame === 3
-  const foodKinds: Thing[] = home.foodGoal === 5 ? ['apple', 'apple', 'apple', 'banana', 'banana', 'banana', 'banana', 'strawberry', 'strawberry'] : Array(6).fill('berry')
+  const foodKinds: Thing[] = home.foodGoal >= 5 ? ['apple', 'apple', 'apple', 'banana', 'banana', 'banana', 'banana', 'strawberry', 'strawberry'] : Array(6).fill('berry')
   const miloPosition = room === 'bedroom' ? activity === 'bed' ? { x: 345, y: 229, w: 110 } : { x: 537, y: 234, w: 115 }
     : room === 'play' ? { x: 468, y: 489, w: 77 } : room === 'kitchen' ? { x: 895, y: 511, w: 81 }
     : room === 'bathroom' ? { x: 811, y: 280, w: 77 } : room === 'garden' ? { x: 470, y: 647, w: 102 }
@@ -176,7 +181,7 @@ export function HomeWorld({ hard, sound, onSound, onWorld, onPicnic, onStory, on
   const displayMilo = home.sleeping || routineFrame >= 2 ? { x: 342, y: 244, w: 102 } : miloPosition
   const showWardrobe = room === 'bedroom' && activity === 'wardrobe'
   const showBed = room === 'bedroom' && activity === 'bed' && !sleeping
-  const cloths: { id: Thing; x: number; y: number }[] = [{ id: 'raincoat', x: 243, y: 227 }, { id: 'shirt', x: 289, y: 227 }, { id: 'swimsuit', x: 335, y: 227 }]
+  const cloths = variation.clothing.map((id,i) => ({id: ['raincoat','shirt','swimsuit'][id] as Thing,x:243+i*46,y:227}))
   const roomNames = { house: 'Milo’s little home', bedroom: 'A cosy little bedroom', bathroom: 'Splish, splash', play: 'A place for little treasures', kitchen: 'Something lovely to share', garden: 'A little corner of green' }
 
   return <main className={`home-world ${room === 'house' ? 'whole-house' : 'room-closeup'} ${sleeping ? 'home-evening' : ''} ${mission ? 'home-away' : ''}`}>
@@ -239,7 +244,7 @@ export function HomeWorld({ hard, sound, onSound, onWorld, onPicnic, onStory, on
           if (!home.coat) { tell('There are my boots! A raincoat will keep the rest of me dry.'); return }
           setHome(h => ({ ...h, boots: true })); tell('Raincoat and boots. Ready for a rainy-day wander!')
         }}><svg x="309" y="528" width="66" height="67"><ObjectArt kind="boots"/></svg><rect x="309" y="528" width="66" height="67" fill="transparent"/></Hotspot>}
-        {toyList.filter(t => !home.toys.includes(t.id)).map(t => room === 'play' ? <DragObject key={t.id} {...t} label={`Drag ${t.id} to the toy box`} target={chest} active={activity === 'toys'} destination="the toy box"
+        {scatteredToys.filter(t => !home.toys.includes(t.id)).map(t => room === 'play' ? <DragObject key={t.id} {...t} label={`Drag ${t.id} to the toy box`} target={chest} active={activity === 'toys'} destination="the toy box"
           onPlace={() => {
             const toys = [...new Set([...home.toys, t.id])]; setHome(h => ({ ...h, toys }))
             if (toys.length === toyList.length) completed('toys', home.coat ? 'All tidy! My boots were underneath. Shall we put them on?' : 'Everything has a home. And look—my little boots!')
@@ -256,7 +261,7 @@ export function HomeWorld({ hard, sound, onSound, onWorld, onPicnic, onStory, on
         <ellipse data-testid="fruit-plate" cx="857" cy="557" rx="43" ry="19" fill="#f0ead6" stroke="#afbdab" strokeWidth="3"/>
         <ellipse cx="857" cy="557" rx="32" ry="12" fill="none" stroke="#d3d9c2" strokeWidth="2"/>
         {home.plate.map((id, i) => <svg key={id} x={828 + i % 3 * 19} y={539 + Math.floor(i / 3) * 12} width="26" height="26" className="put-away-toy"><ObjectArt kind={foodKinds[Number(id)] || 'berry'}/></svg>)}
-        {room === 'kitchen' && activity === 'food' && home.plate.length < home.foodGoal && foodKinds.map((kind, i) => !home.plate.includes(String(i)) && <DragObject key={i} id={`fruit-${i}`} kind={kind} x={718 + i % 3 * 28} y={457 + Math.floor(i / 3) * 27} size={30} active target={plate} label={`Drag ${kind} ${i + 1} onto the plate`} destination="Milo's plate" onPlace={() => {
+        {room === 'kitchen' && activity === 'food' && home.plate.length < home.foodGoal && foodKinds.map((kind, i) => !home.plate.includes(String(i)) && <DragObject key={i} id={`fruit-${i}`} kind={kind} x={718 + variation.food[i] % 3 * 28} y={457 + Math.floor(variation.food[i] / 3) * 27} size={30} active target={plate} label={`Drag ${kind} ${i + 1} onto the plate`} destination="Milo's plate" onPlace={() => {
           const selected = [...new Set([...home.plate, String(i)])]; setHome(h => ({ ...h, plate: selected }))
           if (selected.length === home.foodGoal) completed('food', `${home.foodGoal} pieces. Just enough! Thank you for my snack.`)
           else tell(`${selected.length} on my plate. ${home.foodGoal - selected.length} more to go.`)
@@ -275,15 +280,15 @@ export function HomeWorld({ hard, sound, onSound, onWorld, onPicnic, onStory, on
           {home.watered === 1 && <g className="home-water-drops" stroke="#96b9bd" strokeWidth="3" strokeLinecap="round"><path d="M271 684l-2 8m16-14-2 8m17-4-2 8"/></g>}
           <rect x="244" y="643" width="87" height="122" fill="transparent"/>
         </Hotspot>
-        {room === 'garden' && activity === 'plant' ? <DragObject id="watering-can" kind="can" x={333} y={711} size={53} target={plantTarget} active={!home.watered} label="Water the plant with the watering can" destination="the plant's soil" onPlace={() => {
+        {room === 'garden' && activity === 'plant' ? <DragObject id="watering-can" kind="can" x={variation.canX} y={711} size={53} target={plantTarget} active={!home.watered} label="Water the plant with the watering can" destination="the plant's soil" onPlace={() => {
           if (!inspected) { help('Let’s feel the soil first. Tap the plant.'); return }
           setHome(h => ({ ...h, watered: 1 })); completed('plant', 'A little drink. Look, the leaves are standing up!')
-        }} onMiss={() => help('Carry the watering can over to the dry soil.')}/> : <svg x="333" y="711" width="53" height="53"><ObjectArt kind="can"/></svg>}
+        }} onMiss={() => help('Carry the watering can over to the dry soil.')}/> : <svg x={variation.canX} y="711" width="53" height="53"><ObjectArt kind="can"/></svg>}
         <Hotspot label="Look at the plant's sunny window" disabled={!isActive('garden')} onClick={() => {
           if (room === 'house') enter('garden', 'plant'); else tell(home.sleeping ? 'The sun has gone down. Our plant can rest.' : 'Warm sunlight reaches the leaves. Let’s check the soil.')
         }}><rect x="307" y="649" width="77" height="88" fill="transparent"/></Hotspot>
         <Hotspot label="Read the little book" disabled={!isActive('garden')} onClick={onStory}><rect x="850" y="670" width="117" height="95" fill="transparent"/></Hotspot>
-        <Hotspot label="Explore the round ball" disabled={!isActive('garden')} onClick={() => { setRoom('garden'); setMission(true); tell('My ball is round. Can you find something round near you?') }}><svg x="758" y="730" width="42" height="42"><ObjectArt kind="ball"/></svg><rect x="751" y="721" width="57" height="54" fill="transparent"/></Hotspot>
+        <Hotspot label="Explore the round ball" disabled={!isActive('garden')} onClick={() => { const word=freshShuffle('home-mission',['round','soft','small','blue'])[0];setMissionWord(word);setRoom('garden');setMission(true);tell(`Can you find something ${word} near you?`) }}><svg x="758" y="730" width="42" height="42"><ObjectArt kind="ball"/></svg><rect x="751" y="721" width="57" height="54" fill="transparent"/></Hotspot>
         {/* One original Milo, with only removable clothing layered on top. */}
         <foreignObject x={displayMilo.x} y={displayMilo.y} width={displayMilo.w} height={displayMilo.w * 1.1} className={`home-milo-in-scene ${room === 'house' && !sleeping ? 'milo-comes-home' : ''}`} pointerEvents="none">
           <HomeMilo mood={sleeping ? 'sleepy' : happy ? 'happy' : 'normal'} coat={home.coat && !sleeping && routineFrame < 1} pajamas={sleeping || routineFrame >= 1} boots={home.boots && !sleeping && routineFrame < 1}/>
@@ -297,7 +302,7 @@ export function HomeWorld({ hard, sound, onSound, onWorld, onPicnic, onStory, on
         {showBed && routineFrame < 0 && <>
           <path d="M407 320h264v48H407Z" fill="#e4d3b4" opacity=".96"/>
           {routines.map((r, i) => <g key={r.id} data-testid={`bed-slot-${i}`}><rect x={414 + i * 61} y="322" width="53" height="43" rx="8" fill="#eee3ca" stroke="#b9a98c" strokeDasharray="3 4"/><text x={440 + i * 61} y="350" textAnchor="middle" fill="#a29276" fontSize="15">{i + 1}</text>{routine.includes(r.id) && <svg x={421 + i * 61} y="325" width="39" height="39"><ObjectArt kind={r.id}/></svg>}</g>)}
-          {[2,0,3,1].map((index, i) => !routine.includes(routines[index].id) && <DragObject key={index} id={`routine-${index}`} kind={routines[index].id} x={428 + i * 61} y={265} size={44} active target={{ x: 414 + routine.length * 61, y: 317, w: 57, h: 53 }} label={`Place ${routines[index].label} next`} destination="the next space on the bedtime quilt" onPlace={() => {
+          {variation.routine.map((index, i) => !routine.includes(routines[index].id) && <DragObject key={index} id={`routine-${index}`} kind={routines[index].id} x={428 + i * 61} y={265} size={44} active target={{ x: 414 + routine.length * 61, y: 317, w: 57, h: 53 }} label={`Place ${routines[index].label} next`} destination="the next space on the bedtime quilt" onPlace={() => {
             if (index !== routine.length) { help(['First, let’s get our teeth clean.', 'Clean teeth! What cosy clothes come next?', 'Pajamas on. A little story before sleep?', 'After our story, it’s time to sleep.'][routine.length]); return }
             const next = [...routine, routines[index].id]; setRoutine(next)
             if (next.length === 4) { completed('bed', 'A little brush, brush, brush.'); setRoutineFrame(0) }
@@ -313,7 +318,13 @@ export function HomeWorld({ hard, sound, onSound, onWorld, onPicnic, onStory, on
       <div className="home-dialogue-milo"><HomeMilo mood={sleeping ? 'sleepy' : happy ? 'happy' : 'normal'} coat={home.coat && !sleeping} pajamas={sleeping}/></div>
       <div className="home-speech"><span>MILO</span><p>{dialogue}</p><button className="replay" aria-label="Replay Milo's words" onClick={() => speak(dialogue)}><Volume2 size={20}/></button></div>
     </div>
-    {mission && <div className="home-mission"><div><HomeMilo/><h2>Find something round!</h2><p>Look around your room. Take your time.</p><button className="primary" onClick={() => { setMission(false); tell('You found something round, just like my ball!'); onRecord('Home: real-world mission', 'complete') }}>I found it!</button><button className="text-button" onClick={() => { setMission(false); tell('Let’s stay here and explore.') }}>Stay with Milo</button></div></div>}
+    {mission && <div className="home-mission"><div><HomeMilo/><h2>Find something {missionWord}!</h2><p>Look around your room. Take your time.</p><button className="primary" onClick={() => { setMission(false); tell(`You found something ${missionWord}! What else did you notice?`); onRecord('Home: real-world mission', 'complete') }}>I found it!</button><button className="text-button" onClick={() => { setMission(false); tell('Let’s stay here and explore.') }}>Stay with Milo</button></div></div>}
+    {activity && (activity==='toys' ? fullyTidy : activity==='food' ? home.plate.length===home.foodGoal : activity==='plant' ? home.watered>0 : activity==='wardrobe' ? home.coat : home.sleeping) && <button className="home-new-play" onClick={() => {
+      setVariation(makeVariation()); setInspected(false); setRoutine([]); setRoutineFrame(-1)
+      const goal = freshShuffle('home-count-'+hard, hard ? [5,6] : [3,4])[0]
+      setHome(h => ({ ...h, ...(activity==='toys'?{toys:[]}:activity==='food'?{plate:[],foodGoal:goal}:activity==='plant'?{watered:0}:activity==='wardrobe'?{coat:false,boots:false}:{sleeping:false}) }))
+      tell(activity==='food'?`Can you put ${goal} ${goal<5?'berries':'pieces of fruit'} on my plate?`:activity==='toys'?'A fresh jumble! Can you put the toys away?':activity==='plant'?'Let us care for another thirsty plant. Check the soil first.':activity==='wardrobe'?'Find my raincoat among these clothes.': 'Put our bedtime pictures in order again.')
+    }}>Play again</button>}
     <p id="home-drag-help" className="sr-only">Drag an object to its destination with your finger or mouse. With a keyboard, press Enter to pick it up, use arrow keys to move it, and press Enter to place it. Escape puts it back.</p>
     {room === 'house' && <p className="home-explore-note">A house full of little things to discover.<span>Swipe sideways to look around.</span></p>}
   </main>

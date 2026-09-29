@@ -125,6 +125,7 @@ export function ForestWorld({ sound, onSound, onWorld, onHome }: { sound: boolea
       {moving && <p className="forest-travel-caption" aria-live="polite">Following the path…</p>}
     </div>
     {activityActive && stop.animal && stop.animal !== 'bird' && <AnimalActivity key={stop.id} animal={stop.animal} sound={sound} onComplete={() => setProgress(old => ({ ...old, completed: [...new Set([...old.completed, old.current])], resolved: [...new Set([...old.resolved, old.current])], line: activityLine + 1 }))}/>}
+    {!activityActive && progress.completed.includes(currentIndex) && stop.animal && <button className="forest-play-again" onClick={() => setProgress(old => ({ ...old, completed: old.completed.filter(n => n !== old.current), line: activityLine }))}>Play with {names[stop.animal]} again</button>}
     {!activityActive && <section className="forest-dialogue" aria-label="Forest story">
       <div className="forest-speech"><span className="forest-speaker">{moving ? 'MILO' : line.speaker.toUpperCase()}</span><p aria-live="polite">{moving ? 'I wonder what we’ll find around this bend.' : line.text}</p></div>
       <button className="replay" disabled={moving} aria-label="Replay forest dialogue" onClick={() => speak(line.text)}><Volume2 size={21}/></button>
