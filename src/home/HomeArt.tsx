@@ -37,7 +37,7 @@ export function WindowArt({ night = false, rain = false }: { night?: boolean; ra
   return <g stroke="#b5a488" strokeWidth="4"><path d="M0 130V35Q0 0 55 0q55 0 55 35v95Z" fill={night ? '#798999' : '#c7d8d0'}/><g stroke="none">{night ? <path d="M70 13q-25 25 8 31q-33 17-36-9q-1-18 28-22" fill="#ead7a2"/> : rain ? <><path d="M15 39q-3-20 17-19q15-23 30-3q27-7 32 24Z" fill="#a9b9b8"/>{[20,41,65,86].map(x=><path key={x} d={`M${x} 55l-5 12m3 16l-5 12`} stroke="#8eaeb7" strokeWidth="3"/>)}</> : <circle cx="73" cy="29" r="16" fill="#e7ce8f"/>}<path d="M3 108q30-30 54-13q35-22 51-6v40H3Z" fill={night ? '#81928a' : '#a5b990'}/></g><path d="M55 3v126M2 65h106M-8 132h127" fill="none"/><path d="M-12 7q22 58 5 118h24Q32 60 10 5M101 5q-20 48-5 120h24q-17-73 6-118" stroke="none" fill="#d6bd9a" opacity=".8"/></g>
 }
 
-export function HouseStructure({ sleeping }: { sleeping: boolean }) {
+export function HouseStructure({ sleeping, sunnyMorning = false }: { sleeping: boolean; sunnyMorning?: boolean }) {
   return <g className="house-structure" strokeLinecap="round" strokeLinejoin="round">
     <ellipse cx="602" cy="801" rx="510" ry="22" fill="#9faa8b" opacity=".23"/>
     <path d="M108 779q-62-24-74 6q-31-51-50 10h150M1079 788q38-68 60-18q42-31 70 26h-143" fill="#a4b495"/>
@@ -54,7 +54,7 @@ export function HouseStructure({ sleeping }: { sleeping: boolean }) {
     <path d="M211 380h794v28H211ZM211 612h794v25H211Z" fill="#c1a887" stroke="#ac9475" strokeWidth="3"/><path d="M697 120v260M688 411v200" fill="none" stroke="#c2ad8b" strokeWidth="17"/>
     <path d="M210 775h797l12 13H199Z" fill="#b9a081"/>
     <path d="M205 215v558M1010 215v558" stroke="#b29a7b" strokeWidth="19"/>
-    <g transform="translate(460 135)"><WindowArt night={sleeping} rain={!sleeping}/></g>
+    <g transform="translate(460 135)"><WindowArt night={sleeping} rain={!sleeping && !sunnyMorning}/></g>
     <g transform="translate(750 189) scale(.64)"><WindowArt night={sleeping}/></g>
     <g transform="translate(786 433) scale(.58)"><WindowArt night={sleeping}/></g>
     <g transform="translate(309 652) scale(.65)"><WindowArt night={sleeping}/></g>

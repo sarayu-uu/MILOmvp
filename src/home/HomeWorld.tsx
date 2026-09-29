@@ -10,8 +10,8 @@ import './home.css'
 const STORAGE = 'milo-home-v1'
 type Room = 'house' | 'bedroom' | 'bathroom' | 'play' | 'kitchen' | 'garden'
 type Activity = 'toys' | 'food' | 'plant' | 'wardrobe' | 'bed' | null
-type HomeState = { toys: string[]; plate: string[]; foodGoal: number; watered: number; coat: boolean; boots: boolean; sleeping: boolean }
-const emptyHome = (): HomeState => ({ toys: [], plate: [], foodGoal: 4, watered: 0, coat: false, boots: false, sleeping: false })
+type HomeState = { toys: string[]; plate: string[]; foodGoal: number; watered: number; coat: boolean; boots: boolean; sleeping: boolean; sunnyMorning: boolean }
+const emptyHome = (): HomeState => ({ toys: [], plate: [], foodGoal: 4, watered: 0, coat: false, boots: false, sleeping: false, sunnyMorning: false })
 function loadHome(): HomeState {
   try {
     const value = JSON.parse(localStorage.getItem(STORAGE) || 'null') as Partial<HomeState> | null
@@ -108,7 +108,7 @@ export function HomeWorld({ hard, sound, onSound, onWorld, onPicnic, onStory, on
   const scatteredToys = toyList.map((toy,i) => ({...toy,x:toyList[variation.toys[i]].x,y:Math.min(toyList[variation.toys[i]].y,603-toy.size)}))
   const [room, setRoom] = useState<Room>('house')
   const [activity, setActivity] = useState<Activity>(null)
-  const [dialogue, setDialogue] = useState(() => home.sleeping ? 'Milo is resting. The house is quiet.' : 'We’re home! What should we do?')
+  const [dialogue, setDialogue] = useState(() => home.sleeping ? 'Milo is resting. Tap a moonlit window when you are ready for morning.' : 'We’re home! What should we do?')
   const [routine, setRoutine] = useState<Thing[]>([])
   const [routineFrame, setRoutineFrame] = useState(-1)
   const [inspected, setInspected] = useState(false)
@@ -121,7 +121,7 @@ export function HomeWorld({ hard, sound, onSound, onWorld, onPicnic, onStory, on
   const speak = (text: string) => { if (sound) narrate(text) }
   useEffect(() => { readRef.current = speak })
   useEffect(() => {
-    const timer = setTimeout(() => readRef.current(home.sleeping ? 'Milo is resting. The house is quiet.' : 'We’re home! What should we do?'), 650)
+    const timer = setTimeout(() => readRef.current(home.sleeping ? 'Milo is resting. Tap a moonlit window when you are ready for morning.' : 'We’re home! What should we do?'), 650)
     return () => { clearTimeout(timer); stopNarration() }
     // Entry greeting is spoken once, not after each interaction.
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -149,6 +149,11 @@ export function HomeWorld({ hard, sound, onSound, onWorld, onPicnic, onStory, on
   }, [routineFrame])
 
   function tell(text: string) { setDialogue(text); speak(text) }
+  function wakeUp() {
+    setRoutineFrame(-1); setRoutine([]); setActivity(null); setHappy(false); setMission(false)
+    setHome(h => ({ ...h, sleeping: false, sunnyMorning: true }))
+    tell('Good morning! The sun is up. What shall we explore today?')
+  }
   function help(text: string) { tell(text); if (activity) onRecord(`Home: ${activity}`, 'hint') }
   function completed(which: Activity, text: string) { setHappy(true); tell(text); if (which) onRecord(`Home: ${which}`, 'complete') }
   function enter(nextRoom: Room, nextActivity: Activity = null) {
@@ -164,11 +169,11 @@ export function HomeWorld({ hard, sound, onSound, onWorld, onPicnic, onStory, on
       setInspected(false)
       if (home.watered) { setHome(h => ({ ...h, watered: Math.min(3, h.watered + 1) })); tell(home.watered >= 2 ? 'A flower! Our little plant is growing.' : 'Look, a new leaf! Our plant remembers your care.') }
       else tell('Something’s wrong with my plant. Take a closer look.')
-    } else if (nextActivity === 'wardrobe') tell(home.coat ? 'My raincoat keeps me dry. Where are my boots?' : 'It’s raining outside. What should I wear?')
-    else if (nextActivity === 'bed') { setRoutine([]); tell(home.sleeping ? 'Milo is tucked in. Good night.' : 'What should Milo do first? Put the pictures in order.') }
+    } else if (nextActivity === 'wardrobe') { setHome(h => ({ ...h, sunnyMorning: false })); tell(home.coat ? 'My raincoat keeps me dry. Where are my boots?' : 'Rain clouds are here. What should I wear?') }
+    else if (nextActivity === 'bed') { setRoutine([]); tell(home.sleeping ? 'Milo is tucked in. Tap the moonlit window to start a new day.' : 'What should Milo do first? Put the pictures in order.') }
     else if (nextRoom === 'bathroom') tell('A cosy bath and a towel, ready for another day.')
-    else if (nextRoom === 'bedroom') tell('Listen… raindrops on the window.')
-    else tell(home.sleeping ? 'Milo is resting. The house is quiet.' : 'Make yourself at home.')
+    else if (nextRoom === 'bedroom') tell(home.sleeping ? 'Tap the moonlit window when you are ready for morning.' : home.sunnyMorning ? 'Sunshine through the window. Good morning!' : 'Listen... raindrops on the window.')
+    else tell(home.sleeping ? 'Milo is resting. Tap a moonlit window when you are ready for morning.' : 'Make yourself at home.')
   }
   const fullyTidy = home.toys.length === toyList.length
   const isActive = (r: Room) => room === 'house' || room === r
@@ -202,7 +207,7 @@ export function HomeWorld({ hard, sound, onSound, onWorld, onPicnic, onStory, on
       }}>
         <defs><clipPath id="home-camera"><rect x={view[0]} y={view[1]} width={view[2]} height={view[3]}/></clipPath><pattern id="home-grain" width="180" height="160" patternUnits="userSpaceOnUse"><path d="M12 28h2m16 53h1m41-64h3m-6 98h2m59-57h2m31 71h2m-116 8h1M94 79h2" stroke="#8a826d" strokeWidth="1" opacity=".2"/></pattern></defs>
         <g clipPath="url(#home-camera)">
-        <HouseStructure sleeping={sleeping}/>
+        <HouseStructure sleeping={sleeping} sunnyMorning={home.sunnyMorning}/>
         {/* Rooms are physical spaces: tapping their open floors moves the camera. */}
         {room === 'house' && <>
           <Hotspot label="Explore the bedroom" onClick={() => enter('bedroom')}><rect x="219" y="184" width="476" height="195" fill="transparent"/></Hotspot>
@@ -227,7 +232,7 @@ export function HomeWorld({ hard, sound, onSound, onWorld, onPicnic, onStory, on
           <path d="M349 344h214v10H349" fill="#b5a182"/>
         </Hotspot>
         <g transform="translate(628 286)"><path d="M-18 45h45v8h-45M-11 53v23m32-23v23M4 9v34" stroke="#ae987a" strokeWidth="4"/><path d="M-11-17h31l12 31h-53Z" fill={sleeping ? '#bdb393' : '#e7d09a'}/><circle cx="4" cy="8" r="22" fill="#f3dfaa" opacity={sleeping ? 0 : .16}/></g>
-        <Hotspot label="Look through the rainy window" disabled={!isActive('bedroom')} onClick={() => enter('bedroom', 'wardrobe')}><rect x="458" y="133" width="113" height="131" fill="transparent"/></Hotspot>
+        <Hotspot label={home.sunnyMorning ? "Look through the sunny window" : "Look through the rainy window"} disabled={!isActive('bedroom')} onClick={() => home.sunnyMorning ? tell('The sun is up. A new day to explore!') : enter('bedroom', 'wardrobe')}><rect x="458" y="133" width="113" height="131" fill="transparent"/></Hotspot>
         <g transform="translate(615 332)"><path d="M-14 0h50l-5 32h-41Z" fill="#c9b48f" stroke="#ac9777" strokeWidth="2"/><path d="M-11 10h44m-42 9h40m-31-17v28m10-28v28m10-28v28" stroke="#e4d2af" strokeWidth="2"/><path d="M-7 0l5-13 14 6 8-9 15 9-4 7" fill="#a9b7af"/></g>
         {/* Play corner: a woven rug, a chest, and scattered physical toys. */}
         <ellipse cx="406" cy="563" rx="154" ry="36" fill="#d4c396"/><ellipse cx="406" cy="563" rx="141" ry="29" fill="none" stroke="#e5d5af" strokeWidth="3"/><path d="M256 552l-17-2m16 10-17 0m19 11-17 3m317-21 18-1m-17 9h18m-19 10 17 3" stroke="#c4b080" strokeWidth="3"/>
@@ -310,6 +315,14 @@ export function HomeWorld({ hard, sound, onSound, onWorld, onPicnic, onStory, on
           }} onMiss={() => tell('Slide a picture onto the next empty space on the quilt.')}/>)}
         </>}
         {routineFrame >= 0 && <svg x="419" y="269" width="52" height="52" className="routine-demonstration"><ObjectArt kind={routines[routineFrame].id}/></svg>}
+        {sleeping && [
+          { id: 'bedroom', x: 448, y: 135, w: 135, h: 132 },
+          { id: 'bathroom', x: 742, y: 189, w: 88, h: 85 },
+          { id: 'kitchen', x: 779, y: 433, w: 79, h: 77 },
+          { id: 'garden', x: 301, y: 652, w: 89, h: 87 },
+        ].filter(window => room === 'house' || room === window.id).map(window => <Hotspot key={window.id} label={`Wake Milo with the ${window.id} moonlit window`} onClick={wakeUp}>
+          <rect x={window.x} y={window.y} width={window.w} height={window.h} rx="12" fill="transparent"/>
+        </Hotspot>)}
         <path d="M210 208V775h795V208L593 42Z" fill="url(#home-grain)" pointerEvents="none"/>
         </g>
       </svg>
@@ -319,7 +332,7 @@ export function HomeWorld({ hard, sound, onSound, onWorld, onPicnic, onStory, on
       <div className="home-speech"><span>MILO</span><p>{dialogue}</p><button className="replay" aria-label="Replay Milo's words" onClick={() => speak(dialogue)}><Volume2 size={20}/></button></div>
     </div>
     {mission && <div className="home-mission"><div><HomeMilo/><h2>Find something {missionWord}!</h2><p>Look around your room. Take your time.</p><button className="primary" onClick={() => { setMission(false); tell(`You found something ${missionWord}! What else did you notice?`); onRecord('Home: real-world mission', 'complete') }}>I found it!</button><button className="text-button" onClick={() => { setMission(false); tell('Let’s stay here and explore.') }}>Stay with Milo</button></div></div>}
-    {activity && (activity==='toys' ? fullyTidy : activity==='food' ? home.plate.length===home.foodGoal : activity==='plant' ? home.watered>0 : activity==='wardrobe' ? home.coat : home.sleeping) && <button className="home-new-play" onClick={() => {
+    {activity && (activity==='toys' ? fullyTidy : activity==='food' ? home.plate.length===home.foodGoal : activity==='plant' ? home.watered>0 : activity==='wardrobe' ? home.coat : false) && <button className="home-new-play" onClick={() => {
       setVariation(makeVariation()); setInspected(false); setRoutine([]); setRoutineFrame(-1)
       const goal = freshShuffle('home-count-'+hard, hard ? [5,6] : [3,4])[0]
       setHome(h => ({ ...h, ...(activity==='toys'?{toys:[]}:activity==='food'?{plate:[],foodGoal:goal}:activity==='plant'?{watered:0}:activity==='wardrobe'?{coat:false,boots:false}:{sleeping:false}) }))
