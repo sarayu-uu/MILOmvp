@@ -1,6 +1,12 @@
-﻿export type FoodKind='carrot'|'tomato'|'potato'|'piece'|'pieces'|'water'|'pot'|'bowl'|'spoon'|'basket'
+﻿export type FoodKind='carrot'|'tomato'|'potato'|'piece'|'pieces'|'water'|'pot'|'bowl'|'spoon'|'basket'|'rice'|'ricebowl'|'pasta'|'bread'|'corn'|'pea'|'pepper'
 export function FoodArt({kind,filled=false,shape='circle',contents}:{kind:FoodKind;filled?:boolean;shape?:string;contents?:'pieces'|'water'}){
  return <svg viewBox="0 0 160 160" aria-hidden="true"><g stroke="#85765e" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round">
+ {(kind==='rice'||kind==='ricebowl')&&<><path d="M18 74q7 71 63 71q54-1 62-71" fill="#a8bfae"/><ellipse cx="80" cy="74" rx="63" ry="32" fill="#f5edd7"/>{[0,1,2,3,4,5,6,7,8].map(i=><path key={i} d={`M${43+i%3*26} ${60+Math.floor(i/3)*13}l9 2`} stroke="#d9ccaa" strokeWidth="5"/>)}{filled&&<><circle cx="51" cy="68" r="8" fill="#8fa970"/><circle cx="102" cy="77" r="8" fill="#8fa970"/><path d="M72 81l10 3m20-23 9 3" stroke="#e1c56c" strokeWidth="11"/><path d="M64 57l10 3m-29 23 10 3" stroke="#c98473" strokeWidth="9"/></>}</>}
+ {kind==='pasta'&&<>{[0,1,2].map(i=><path key={i} d={`M${35+i*35} 47q-20 30 0 58`} fill="none" stroke="#d9ba77" strokeWidth="17"/>)}</>}
+ {kind==='bread'&&<><path d="M39 63q-20-35 14-39h55q35 5 13 39v67H39Z" fill="#c6a27c"/><path d="M49 65q-17-27 7-30h49q25 4 6 30v54H49Z" fill="#ecdbad"/></>}
+ {kind==='corn'&&<path d="M48 44q31-18 58 0l9 49q-2 31-34 30q-33 2-37-24Z" fill="#e1c56c"/>}
+ {kind==='pea'&&<><circle cx="80" cy="82" r="38" fill="#8fa970"/><path d="M57 75q1-17 19-18" fill="none" stroke="#c5d3a5" strokeWidth="7"/></>}
+ {kind==='pepper'&&<><path d="M81 52q-35-23-48 10q-13 60 31 71q18 14 38-1q39-16 26-65q-8-36-47-15" fill="#c98473"/><path d="M81 55q-10-23 8-34" fill="none" stroke="#8fa970" strokeWidth="9"/><path d="M65 67q-10 28 0 48" fill="none"/></>}
  {kind==='carrot'&&<><path d="M77 48Q36 52 50 87l15 57q7 16 17-1l35-68q7-37-40-27" fill="#dca06d"/><path d="M80 49Q49 22 62 14q16-4 23 27Q79 4 95 8q13 10-2 36q24-35 34-20q1 17-35 29" fill="#94a77b"/><path d="M53 78l22 5m20 9 12 3m-43 15 15 3" fill="none"/></>}
  {kind==='tomato'&&<><path d="M82 55q-47-27-57 21q-9 56 51 62q57 1 62-48q0-48-56-35" fill="#c98473"/><path d="M82 60L56 46l25 2 8-25 6 28 23-8-14 19" fill="#8fa578"/></>}
  {kind==='potato'&&<><path d="M40 53q21-35 66-17q41 16 27 63q-9 44-69 38q-51-7-42-49Z" fill="#c6ad86"/><path d="M51 72l3 2m34-15 3 3m15 34 3 1m-43 13 4 2" strokeWidth="5"/></>}

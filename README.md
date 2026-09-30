@@ -92,12 +92,14 @@ The homepage includes the Play Together message. Existing House, Forest and Stor
 
 After building, `node pond-smoke.mjs` checks all four activities and replays, gentle retries, counting, keyboard and touch input, return navigation and four screen sizes. It also disables the Web Audio API to check the games do not rely on sound effects. Screenshots are saved in `images/`.
 
-## Food Garden: Carrot Soup
+## Food Garden: Carrot Soup and Rainbow Rice
 
-The fruit basket beside Milo's house opens one recipe: Carrot Soup. Ten child-paced stages cover finding three carrots, washing, recognizing prepared pieces, filling a pot, adding water, stirring, a shared-meal pause, choosing a round bowl, serving and talking together. Vegetable positions, matching choices and bowls shuffle on replay; retries keep the same arrangement.
+The fruit basket opens a choice of Carrot Soup or Rainbow Rice. Ten child-paced stages cover finding three carrots, washing, recognizing prepared pieces, filling a pot, adding water, stirring, a shared-meal pause, choosing a round bowl, serving and talking together. Vegetable positions, matching choices and bowls shuffle on replay; retries keep the same arrangement.
 
 Water, carrot pieces and the spoon support mouse/touch dragging and tap-then-target selection. Keyboard users can select the source and destination with Enter. Stirring follows circular pointer movement and also offers a Stir once button. The calm pause changes its invitation after 12 seconds, but Keep cooking is available immediately. Eating is never measured, required or rewarded. Milo's original artwork stays unchanged; bowls and spoons are separate illustrations.
 
 After building, run `node kitchen-smoke.mjs` for the complete recipe, gentle retries, mouse/touch dragging, circular stirring, replay, optional pause and desktop/mobile checks. It starts and stops its preview server and saves pictures under `images/`.
 
 Food Garden now begins with an eat-and-play invitation. Seven mealtime breaks separate the cooking tasks, including gentle "Chew 5 times, slowly" prompts and a reminder to keep chewing at your own pace. Each break waits for Keep cooking; there is no eating verification or reward gate. All homepage worlds are immediately available. The Play Together message and optional Let's Go introduction still invite a grown-up to join.
+
+Rainbow Rice (ages 3-5) restores Milo's rainbow through ten short stages: recognize rice, choose a big bowl, collect yellow corn, count four peas, match red peppers, finish an alternating pattern, sort three colors into a bowl, stir in circles, hunt for two colors on your real plate, and taste together. Positions and pattern choices shuffle on replay and stay stable during retries. Sorting supports mouse/touch dragging and tap-then-place; stirring also has a tap alternative. Quiet meal breaks wait for the family, and the final rainbow appears after eight calm seconds without requiring eating confirmation. Run `node rainbow-rice-smoke.mjs` after a build to check the full flow at desktop, small-phone, and landscape sizes.
