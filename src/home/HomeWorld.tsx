@@ -1,3 +1,4 @@
+import {ContinueButton} from '../play/ContinueButton'
 import { freshShuffle } from '../variation'
 import { narrate, stopNarration } from '../narration'
 import { useEffect, useRef, useState } from 'react'
@@ -164,13 +165,13 @@ export function HomeWorld({ hard, sound, onSound, onWorld, onPicnic, onStory, on
     else if (nextActivity === 'food') {
       const goal = home.plate.length ? home.foodGoal : freshShuffle('home-count-'+hard, hard ? [5,6] : [3,4])[0]
       setHome(h => ({ ...h, foodGoal: goal }))
-      tell(home.plate.length === goal ? 'Just enough for a lovely snack. Thank you!' : `I’m hungry! Can you put ${goal} ${goal < 5 ? 'berries' : 'pieces of fruit'} on my plate?`)
+      tell(home.plate.length === goal ? 'Just enough for a lovely snack. Thank you!' : `I’m hungry! Drag ${goal} ${goal < 5 ? 'berries' : 'pieces of fruit'} onto my plate.`)
     } else if (nextActivity === 'plant') {
       setInspected(false)
       if (home.watered) { setHome(h => ({ ...h, watered: Math.min(3, h.watered + 1) })); tell(home.watered >= 2 ? 'A flower! Our little plant is growing.' : 'Look, a new leaf! Our plant remembers your care.') }
-      else tell('Something’s wrong with my plant. Take a closer look.')
-    } else if (nextActivity === 'wardrobe') { setHome(h => ({ ...h, sunnyMorning: false })); tell(home.coat ? 'My raincoat keeps me dry. Where are my boots?' : 'Rain clouds are here. What should I wear?') }
-    else if (nextActivity === 'bed') { setRoutine([]); tell(home.sleeping ? 'Milo is tucked in. Tap the moonlit window to start a new day.' : 'What should Milo do first? Put the pictures in order.') }
+      else tell('Tap the plant to check the soil. Then drag the watering can to it.')
+    } else if (nextActivity === 'wardrobe') { setHome(h => ({ ...h, sunnyMorning: false })); tell(home.coat ? 'My raincoat keeps me dry. Where are my boots?' : 'Drag the raincoat from the wardrobe onto Milo.') }
+    else if (nextActivity === 'bed') { setRoutine([]); tell(home.sleeping ? 'Milo is tucked in. Tap the moonlit window to start a new day.' : 'Drag each bedtime picture into the next empty space. Start with the toothbrush.') }
     else if (nextRoom === 'bathroom') tell('A cosy bath and a towel, ready for another day.')
     else if (nextRoom === 'bedroom') tell(home.sleeping ? 'Tap the moonlit window when you are ready for morning.' : home.sunnyMorning ? 'Sunshine through the window. Good morning!' : 'Listen... raindrops on the window.')
     else tell(home.sleeping ? 'Milo is resting. Tap a moonlit window when you are ready for morning.' : 'Make yourself at home.')
@@ -331,12 +332,12 @@ export function HomeWorld({ hard, sound, onSound, onWorld, onPicnic, onStory, on
       <div className="home-dialogue-milo"><HomeMilo mood={sleeping ? 'sleepy' : happy ? 'happy' : 'normal'} coat={home.coat && !sleeping} pajamas={sleeping}/></div>
       <div className="home-speech"><span>MILO</span><p>{dialogue}</p><button className="replay" aria-label="Replay Milo's words" onClick={() => speak(dialogue)}><Volume2 size={20}/></button></div>
     </div>
-    {mission && <div className="home-mission"><div><HomeMilo/><h2>Find something {missionWord}!</h2><p>Look around your room. Take your time.</p><button className="primary" onClick={() => { setMission(false); tell(`You found something ${missionWord}! What else did you notice?`); onRecord('Home: real-world mission', 'complete') }}>I found it!</button><button className="text-button" onClick={() => { setMission(false); tell('Let’s stay here and explore.') }}>Stay with Milo</button></div></div>}
+    {mission && <div className="home-mission"><div><HomeMilo/><h2>Find something {missionWord}!</h2><p>Look around your room. Take your time.</p><ContinueButton className="primary" onClick={() => { setMission(false); tell(`You found something ${missionWord}! What else did you notice?`); onRecord('Home: real-world mission', 'complete') }}>I found it!</ContinueButton><button className="text-button" onClick={() => { setMission(false); tell('Let’s stay here and explore.') }}>Stay with Milo</button></div></div>}
     {activity && (activity==='toys' ? fullyTidy : activity==='food' ? home.plate.length===home.foodGoal : activity==='plant' ? home.watered>0 : activity==='wardrobe' ? home.coat : false) && <button className="home-new-play" onClick={() => {
       setVariation(makeVariation()); setInspected(false); setRoutine([]); setRoutineFrame(-1)
       const goal = freshShuffle('home-count-'+hard, hard ? [5,6] : [3,4])[0]
       setHome(h => ({ ...h, ...(activity==='toys'?{toys:[]}:activity==='food'?{plate:[],foodGoal:goal}:activity==='plant'?{watered:0}:activity==='wardrobe'?{coat:false,boots:false}:{sleeping:false}) }))
-      tell(activity==='food'?`Can you put ${goal} ${goal<5?'berries':'pieces of fruit'} on my plate?`:activity==='toys'?'A fresh jumble! Can you put the toys away?':activity==='plant'?'Let us care for another thirsty plant. Check the soil first.':activity==='wardrobe'?'Find my raincoat among these clothes.': 'Put our bedtime pictures in order again.')
+      tell(activity==='food'?`Drag ${goal} ${goal<5?'berries':'pieces of fruit'} onto my plate.`:activity==='toys'?'Drag each toy into the toy box.':activity==='plant'?'Tap the plant to check its soil. Then drag the watering can to it.':activity==='wardrobe'?'Drag the raincoat onto Milo.': 'Put our bedtime pictures in order again.')
     }}>Play again</button>}
     <p id="home-drag-help" className="sr-only">Drag an object to its destination with your finger or mouse. With a keyboard, press Enter to pick it up, use arrow keys to move it, and press Enter to place it. Escape puts it back.</p>
     {room === 'house' && <p className="home-explore-note">Tap a room to explore up close.</p>}

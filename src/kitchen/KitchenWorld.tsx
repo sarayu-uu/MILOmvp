@@ -1,8 +1,9 @@
-﻿import {useEffect,useRef,useState} from 'react'
+import {Action} from '../forest/AnimalActivity'
+import {ContinueButton} from '../play/ContinueButton'
+import {useEffect,useRef,useState} from 'react'
 import type {PointerEvent as ReactPointerEvent} from 'react'
 import {ArrowLeft,Volume2,VolumeX} from 'lucide-react'
 import {Milo} from '../Illustrations'
-import {Action} from '../forest/AnimalActivity'
 import {freshShuffle} from '../variation'
 import {narrate,stopNarration} from '../narration'
 import {FoodArt,KitchenBackdrop} from './KitchenArt'
@@ -10,7 +11,7 @@ import type {FoodKind} from './KitchenArt'
 import {Carry,MealMoment} from './KitchenShared'
 import {RainbowRice} from './RainbowRice'
 import './kitchen.css'
-const prompts=['Find 3 carrots!','Wash, wash, wash!','Find the carrot pieces.','Put 3 carrot pieces in the pot.','Add water to the pot.','Stir our soup in a circle.','Our soup needs a little time. Let’s enjoy our meal together.','Choose a round bowl.','Serve Milo a bowl of soup.','What’s on YOUR plate? Tell your grown-up.']
+const prompts=['Tap 3 carrots.','Tap the water, then each carrot to wash it.','Tap the picture of carrot pieces.','Tap a carrot piece, then the pot. Add all 3.','Tap the water, then the pot.','Move your finger in circles on the pot, or tap Stir once.','Our soup needs a little time. Let’s enjoy our meal together.','Tap the round bowl.','Tap the spoon, then the bowl to serve soup.','What’s on YOUR plate? Tell your grown-up.']
 const nextLabels=['Wash the carrots','Find the pieces','Fill the pot','Add water','Stir the soup','Let it rest','Keep cooking','Serve the soup','Sit together']
 function makeRecipe(){return{vegetables:freshShuffle('soup-vegetables',['carrot-1','tomato','carrot-2','potato','carrot-3']),pieces:freshShuffle('soup-pieces',['pieces','potato','tomato'] as FoodKind[]),bowls:freshShuffle('soup-bowls',['circle','square','triangle'])}}
 function SoupStage({step,sound,onNext,recipe}:{step:number;sound:boolean;onNext:()=>void;recipe:ReturnType<typeof makeRecipe>}){
@@ -23,7 +24,7 @@ function SoupStage({step,sound,onNext,recipe}:{step:number;sound:boolean;onNext:
  function drop(target:string,source=picked){if(done)return;if(step===1&&source==='water'&&target.startsWith('wash-'))add(target,3);else if(step===3&&source.startsWith('piece-')&&target==='pot'){add(source,3);setPicked('')}else if(step===4&&source==='water'&&target==='pot')setDone(true);else if(step===8&&source==='spoon'&&target==='bowl')setDone(true);else setHint('Let’s try it over here.')}
  function stir(){if(stirCount.current>=3)return;stirCount.current+=1;setStirs(stirCount.current);if(stirCount.current===3)setDone(true)}
  function stirPoint(e:ReactPointerEvent<HTMLDivElement>){const r=e.currentTarget.getBoundingClientRect();const x=e.clientX-r.left-r.width/2,y=e.clientY-r.top-r.height/2;if(Math.hypot(x,y)<r.width*.12)return;const current=Math.atan2(y,x);setAngle(current);if(lastAngle.current!==null){let delta=current-lastAngle.current;if(delta>Math.PI)delta-=2*Math.PI;if(delta< -Math.PI)delta+=2*Math.PI;distance.current+=Math.abs(delta);if(distance.current>=Math.PI*2){distance.current-=Math.PI*2;stir()}}lastAngle.current=current}
- return <><section className="kitchen-instruction"><h2 aria-live="polite">{text}</h2><button className="replay" aria-label="Hear cooking instruction" onClick={()=>{if(sound)narrate(text)}}><Volume2 size={22}/></button></section><div className={`kitchen-stage ${step===6||step===9?'kitchen-quiet':''}`} data-kitchen-stage={step}><KitchenBackdrop/>
+ return <><section className="kitchen-instruction"><h2 aria-live="polite">{text}</h2><button className="replay" aria-label="Hear cooking instruction" onClick={()=>{if(sound)narrate(text)}}><Volume2 size={22}/></button></section><div className={`kitchen-stage ${step===6||step===9?'kitchen-quiet':''}`} data-kitchen-stage={step} data-step-complete={done||undefined}><KitchenBackdrop/>
   <div className="kitchen-worktop">
   {step===0&&<div className="kitchen-foods">{recipe.vegetables.map(id=><button className={`kitchen-food ${found.includes(id)?'kitchen-found':''}`} key={id} disabled={found.includes(id)||done} aria-label={id.startsWith('carrot')?id.replace('-',' '):id} onClick={()=>id.startsWith('carrot')?add(id,3):setHint('Look for the long orange carrots.')}><FoodArt kind={id.startsWith('carrot')?'carrot':id as FoodKind}/></button>)}</div>}
   {step===1&&<><Carry kind="water" label="Pick up washing water" selected={picked==='water'} onPick={()=>setPicked('water')} onDrop={target=>drop(target,'water')}/><div className="kitchen-foods">{[0,1,2].map(i=><button key={i} className={`kitchen-food ${found.includes('wash-'+i)?'kitchen-found':''}`} data-kitchen-drop={'wash-'+i} aria-label={`Wash carrot ${i+1}`} disabled={found.includes('wash-'+i)} onClick={()=>picked?drop('wash-'+i):setHint('Tap the water, then a carrot.')}><FoodArt kind="carrot"/>{found.includes('wash-'+i)&&<span className="kitchen-clean">Clean!</span>}</button>)}</div></>}
@@ -35,7 +36,7 @@ function SoupStage({step,sound,onNext,recipe}:{step:number;sound:boolean;onNext:
   {step===7&&<div className="kitchen-foods">{recipe.bowls.map(shape=><button key={shape} className="kitchen-food" aria-label={`${shape} bowl`} disabled={done} onClick={()=>shape==='circle'?setDone(true):setHint('Find the round bowl, with no corners.')}><FoodArt kind="bowl" shape={shape}/></button>)}</div>}
   {step===8&&<><Carry kind="spoon" filled label="Pick up soup spoon" selected={picked==='spoon'} onPick={()=>setPicked('spoon')} onDrop={target=>drop(target,'spoon')}/><button className="kitchen-vessel" data-kitchen-drop="bowl" aria-label="Serve soup in bowl" onClick={()=>picked?drop('bowl'):setHint('Pick up the soup spoon first.')}><FoodArt kind="bowl" filled={done}/></button></>}
   </div>
- </div><footer className="kitchen-footer">{step!==6&&step!==9&&<div className="kitchen-companion"><Milo mood={done?'happy':'curious'}/></div>}<div className="kitchen-status" aria-live="polite">{[0,1,3].includes(step)?`${found.length} of 3`:done?'Ready for the next part.':step===6?'Look away and enjoy a moment together.':step===9?'Talk together. There is no hurry.':''}</div>{(done||step===6||step===9)&&<Action onClick={onNext}>{step===9?'Back to the garden':nextLabels[step]}</Action>}</footer></>
+ </div><footer className="kitchen-footer">{step!==6&&step!==9&&<div className="kitchen-companion"><Milo mood={done?'happy':'curious'}/></div>}<div className="kitchen-status" aria-live="polite">{[0,1,3].includes(step)?`${found.length} of 3`:done?'Ready for the next part.':step===6?'Look away and enjoy a moment together.':step===9?'Talk together. There is no hurry.':''}</div>{(done||step===6||step===9)&&<ContinueButton onClick={onNext}>{step===9?'Back to the garden':nextLabels[step]}</ContinueButton>}</footer></>
 }
 export function KitchenWorld({sound,onSound,onBack}:{sound:boolean;onSound:()=>void;onBack:()=>void}){
  const [rice,setRice]=useState(false)

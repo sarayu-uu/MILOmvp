@@ -1,4 +1,5 @@
-﻿import {useEffect,useState} from 'react'
+import {ContinueButton} from '../play/ContinueButton'
+import {useEffect,useState} from 'react'
 import {ArrowLeft,Volume2,VolumeX} from 'lucide-react'
 import {Milo} from '../Illustrations'
 import {narrate,stopNarration} from '../narration'
@@ -16,7 +17,7 @@ function makeRound(kind:Activity){
 }
 function PondGame({kind,sound}:{kind:Activity;sound:boolean}){
  const [round,setRound]=useState(()=>makeRound(kind)),[done,setDone]=useState(false),[hint,setHint]=useState(false),[counted,setCounted]=useState<number[]>([])
- const instruction=kind==='colors'?`Find the ${round.target} fish!`:kind==='numbers'?'How many frogs? Tap each frog.':kind==='alphabet'?`Find ${round.target}!`:`Find the ${round.target}!`
+ const instruction=kind==='colors'?`Tap the ${round.target} fish!`:kind==='numbers'?'How many frogs? Tap each frog.':kind==='alphabet'?`Tap the bubble with ${round.target}!`:`Tap the ${round.target} shape!`
  const text=done?kind==='numbers'?`${round.target} ${round.target==='1'?'frog':'frogs'}! You counted them all.`:'You found it!':hint?'Let\u2019s look again. '+instruction:instruction
  useEffect(()=>{if(sound)return narrate(text)},[text,sound])
  function choose(value:string){if(done)return;if(value===round.target){setDone(true);setHint(false)}else setHint(true)}
@@ -28,7 +29,7 @@ function PondGame({kind,sound}:{kind:Activity;sound:boolean}){
    {kind==='alphabet'&&<><span className="pond-example-letter" aria-label="Letter to find">{round.target}</span><div className="pond-objects">{round.letters.map(letter=><button key={letter} aria-label={`Bubble ${letter}`} className={done&&letter===round.target?'pond-found':''} disabled={done} onClick={()=>choose(letter)}><Bubble letter={letter}/></button>)}</div></>}
    {kind==='shapes'&&<><div className="pond-example-shape" aria-label={`${round.target} shape clue`}><Shape kind={round.target}/></div><div className="pond-objects">{round.shapes.map(shape=><button key={shape} aria-label={`${shape} shell`} className={done&&shape===round.target?'pond-found':''} disabled={done} onClick={()=>choose(shape)}><Shape kind={shape}/></button>)}</div></>}
   </div>
-  <div className="pond-bottom"><div className="pond-milo"><Milo mood={done?'happy':'curious'}/></div>{done?<button className="primary" onClick={()=>{stopNarration();setRound(makeRound(kind));setDone(false);setHint(false);setCounted([])}}>Play again</button>:<p>{kind==='numbers'?`${counted.length} counted`:'Take your time.'}</p>}</div>
+  <div className="pond-bottom"><div className="pond-milo"><Milo mood={done?'happy':'curious'}/></div>{done?<ContinueButton className="primary" onClick={()=>{stopNarration();setRound(makeRound(kind));setDone(false);setHint(false);setCounted([])}}>Play again</ContinueButton>:<p>{kind==='numbers'?`${counted.length} counted`:'Take your time.'}</p>}</div>
  </>
 }
 export function PondWorld({sound,onSound,onBack}:{sound:boolean;onSound:()=>void;onBack:()=>void}){

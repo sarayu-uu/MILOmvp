@@ -19,7 +19,7 @@ try{
      const count=await buttons.count();assert.ok(count>=1&&count<=5);await buttons.first().tap();if(count>1)assert.equal(await p.getByRole('button',{name:'Play again',exact:true}).count(),0);
      for(let i=1;i<count;i++)await buttons.nth(i).tap();assert.ok((await p.locator('.pond-prompt').textContent()).includes(count+(count===1?' frog':' frogs')));
     }else{
-     const target=prompt.match(/Find (?:the )?(.+?)(?: fish)?!/)[1];const label=area==='Color fish'?target+' fish':area==='Letter bubbles'?'Bubble '+target:target+' shell';
+     const target=prompt.match(area==='Letter bubbles'?/Tap the bubble with (.+)!/:/Tap the (.+) (?:fish|shape)!/)[1];const label=area==='Color fish'?target+' fish':area==='Letter bubbles'?'Bubble '+target:target+' shell';
      const wrong=await buttons.evaluateAll((els,label)=>els.find(el=>el.getAttribute('aria-label')!==label).getAttribute('aria-label'),label);await click(wrong);
      assert.equal(await p.getByRole('button',{name:'Play again',exact:true}).count(),0);assert.ok((await p.locator('.pond-prompt h2').textContent()).includes(prompt));
      await p.getByRole('button',{name:label,exact:true}).focus();await p.keyboard.press('Enter');
@@ -33,6 +33,6 @@ try{
   await click('Back to world');await p.getByRole('button',{name:"Explore Milo's home",exact:true}).waitFor();
  }
  // Optional picture game also works with audio unavailable.
- await click('Grown-up settings');await p.getByRole('button',{name:/Pictures in the bushes/}).click();await click((await p.locator('.picture-target').textContent()).match(/Find the (\w+)!/)[1]);await p.locator('.success-note').waitFor();
+ await click('Grown-up settings');await p.getByRole('button',{name:/Pictures in the bushes/}).click();await click((await p.locator('.picture-target').textContent()).match(/Tap the (\w+)!/)[1]);await p.locator('.success-note').waitFor();
  assert.deepEqual(errors,[]);console.log('PASS: four pond games, retries, replay, counting 1–5, touch/keyboard, responsive layouts, navigation and visual guessing without audio.');
 }finally{await browser?.close();server.kill()}

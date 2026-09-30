@@ -1,3 +1,4 @@
+import {ContinueButton} from '../play/ContinueButton'
 import {useCallback,useEffect,useState} from 'react'
 import {ArrowLeft,ArrowRight,Volume2,VolumeX} from 'lucide-react'
 import {Milo} from '../Illustrations'
@@ -18,13 +19,13 @@ function ScenePage({v,scene,sound,onNext,onFinish}:{v:StoryVariation;scene:Scene
  useEffect(()=>{if(sound)return narrate(text,narrationId)},[sound,text,narrationId])
  const ending=scene.kind==='ending',opening=scene.kind==='opening'
  return <>
-  <div className="story-play-area" data-scene={scene.kind}>
+  <div className="story-play-area" data-scene={scene.kind} data-step-complete={done||undefined}>
    {opening||ending?<StoryScene book={v.book} ending={ending} label={scene.title}>
     {v.book==='moon'?<><StoryObject kind="moon" label={ending?'The moon shines again':'The sleepy moon'} x={650} y={60} size={200} dim={!ending}/><StoryObject kind="firefly" label="A friendly firefly" x={305} y={275} size={130}/>{ending&&<StoryObject kind="owl" label="Owl watching the moon" x={740} y={350}/>}</>:v.book==='bird'?<><StoryObject kind="tree" label="Bird's tree" x={545} y={25} size={360}/><StoryObject kind={ending?'nest':'rock'} label={ending?'A family nest':'A little rock'} x={ending?620:390} y={ending?205:355} size={180}/><StoryObject kind="bird" label="Little Bird" x={ending?658:440} y={ending?175:295} size={110}/>{ending&&<><StoryObject kind="bird" label="Bird's family" x={585} y={175} size={110}/><StoryObject kind="feather" label="A feather for Milo" x={220} y={370} size={100}/></>}</>:<><StoryObject kind="cloud" label="Little Cloud" x={430} y={30} size={240} color={ending?'#aebfc4':undefined}/>{[0,1,2,3].map(i=><StoryObject key={i} kind="flowers" label="Meadow flowers" x={220+i*175} y={370} dim={!ending} color="#d6b396"/>)}{ending&&<><g stroke="#a6c5ce" strokeWidth="4">{[300,390,480,570,660,750].map(x=><path key={x} d={`M${x} 245l-8 24m5 32-8 24`}/>)}</g><ellipse cx="827" cy="478" rx="78" ry="18" fill="#a6c7cb"/><StoryObject kind="frog" label="Frog enjoys a puddle" x={765} y={387}/></>}</>}
    </StoryScene>:<StoryActivity kind={scene.kind} v={v} sound={sound} onComplete={complete} onHint={hint}/>}
   </div>
   <section className="story-dialogue" aria-label="Story dialogue"><div><span>MILO & FRIENDS</span><p aria-live="polite">{text}</p></div><button className="round-button" aria-label="Replay story narration" onClick={()=>{if(sound)narrate(text,narrationId)}}><Volume2 size={21}/></button>
-   {(opening||ending||done)&&<button className="play-action story-next" onClick={ending?onFinish:onNext}>{ending?'Back to Story Tree':opening?'Let us find out':'Continue story'}<ArrowRight size={18}/></button>}
+   {(opening||ending||done)&&<ContinueButton className="play-action story-next" onClick={ending?onFinish:onNext}>{ending?'Back to Story Tree':opening?'Let us find out':'Continue story'}<ArrowRight size={18}/></ContinueButton>}
   </section>
  </>
 }

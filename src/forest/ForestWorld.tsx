@@ -1,3 +1,4 @@
+import {ContinueButton} from '../play/ContinueButton'
 import { narrate } from '../narration'
 import { useEffect, useRef, useState } from 'react'
 import { ArrowLeft, ArrowRight, Footprints, Home, Volume2, VolumeX } from 'lucide-react'
@@ -130,9 +131,9 @@ export function ForestWorld({ sound, onSound, onWorld, onHome, onStory }: { soun
     {!activityActive && <section className="forest-dialogue" aria-label="Forest story">
       <div className="forest-speech"><span className="forest-speaker">{moving ? 'MILO' : line.speaker.toUpperCase()}</span><p aria-live="polite">{moving ? 'I wonder what we’ll find around this bend.' : line.text}</p></div>
       <button className="replay" disabled={moving} aria-label="Replay forest dialogue" onClick={() => speak(line.text)}><Volume2 size={21}/></button>
-      <button className="forest-continue" disabled={moving} onClick={advance}>
+      <ContinueButton className="forest-continue" disabled={moving} onClick={advance}>
         {moving ? 'On our way…' : finished ? 'Walk home' : atLastLine ? progress.current === 6 ? 'To the Story Tree' : 'Follow the path' : 'And then?'}
-        {finished ? <Home size={18}/> : <ArrowRight size={18}/>}</button>
+        {finished ? <Home size={18}/> : <ArrowRight size={18}/>}</ContinueButton>
     </section>}
     {finished && <button className="forest-play-again" onClick={onStory}>Read beneath the Story Tree</button>}
     <p className="forest-bottom-note">{restored ? 'A little light for everyone.' : 'There’s a little wonder around every bend.'}</p>

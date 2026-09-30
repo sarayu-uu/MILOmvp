@@ -1,3 +1,4 @@
+import {ContinueButton} from '../play/ContinueButton'
 import {pictureAnimals} from '../play/pictureData'
 import { useRecall } from '../play/useRecall'
 import {PictureGuess} from '../play/PictureGuess'
@@ -24,7 +25,8 @@ function Frame({ kind, title, text, children, sound }: { kind: PlayAnimal; title
     {children}
   </section>
 }
-export function Action({ children, onClick, disabled = false }: { children: ReactNode; onClick: () => void; disabled?: boolean }) {
+export function Action({ children, onClick, disabled = false, continueAnywhere = false }: { children: ReactNode; onClick: () => void; disabled?: boolean; continueAnywhere?: boolean }) {
+  if(continueAnywhere)return <ContinueButton onClick={onClick} disabled={disabled}>{children}</ContinueButton>
   return <button className="play-action" onClick={onClick} disabled={disabled}>{children}</button>
 }
 
@@ -43,10 +45,10 @@ function Frog({ sound, onComplete }: Props) {
         {[0,1,2].map(i => <g key={i} transform={`translate(${i*170+37} ${i===1 ? tiny ? 49 : 0 : 63})`}><svg width="90" height="80"><ForestAnimal kind="frog"/></svg></g>)}
         <path d="M36 143h96m245 0h96" stroke="#a4b394" strokeWidth="5" strokeLinecap="round"/>
       </svg><div className="picture-labels"><span>Ground</span><span>{step>=2 ? tiny ? 'Tiny jump' : 'BIG jump' : 'In the air'}</span><span>Land</span></div>
-      <p>Try {count === 1 ? 'one jump' : `${count} jumps`}, then tap Done.</p>
+      <p>Try {count === 1 ? 'one jump' : `${count} jumps`}, then tap anywhere.</p>
     </div>}
     {step === 4 && <><div className="jump-pattern" aria-label={`${groups.join(", ")}, what comes next?`}>{groups.map((n, i) => <span key={i} className={hint && i % 2 === 0 ? 'useful-clue' : ''}>{Array.from({ length: n }, (_, j) => <i key={j}/>)}<b>{n}</b></span>)}<span>?</span></div><p className="play-hint" role="status">{hint ? `Hmm... look at the pairs: ${a}, ${b}. ${a}, ${b}. What starts the next pair?` : 'How many jumps next?'}</p><div className="play-actions">{variation.answers.map(n => <Action key={n} onClick={() => n === a ? setStep(5) : setHint(true)}>{n} jumps</Action>)}</div></>}
-    <div className="play-actions">{step < 4 ? <Action onClick={() => setStep(v => v + 1)}>Done</Action> : step === 5 ? <Action onClick={onComplete}>On across the stones</Action> : null}</div>
+    <div className="play-actions">{step < 4 ? <ContinueButton onClick={() => setStep(v => v + 1)}>I did it!</ContinueButton> : step === 5 ? <ContinueButton onClick={onComplete}>Keep exploring</ContinueButton> : null}</div>
   </Frame>
 }
 
@@ -55,7 +57,7 @@ function Bear({ sound, onComplete }: Props) {
   const [variation] = useState(() => ({ heights: freshShuffle('bear-heights', [[230,158,86], [242,178,108], [221,147,70]])[0], mirror: freshShuffle('bear-side', [false, true])[0] }))
   const branchY = variation.heights
   const bearY = height ? branchY[height - 1] - 111 : 191
-  const messages = ['Can you reach this high? Show Bear, then tap Done.', 'Can you reach a little higher? Then tap Done.', height === 0 ? 'Tap the lowest branch to help Bear.' : height < 3 ? 'That holds me! Tap the next branch just above my paws.' : 'Sticky paws and a happy tummy. You helped me find a whole way up!']
+  const messages = ['Can you reach this high? Lift your arms up, then tap anywhere.', 'Can you reach a little higher? Then tap anywhere.', height === 0 ? 'Tap the lowest branch to help Bear.' : height < 3 ? 'That holds me! Tap the next branch just above my paws.' : 'Sticky paws and a happy tummy. You helped me find a whole way up!']
   return <Frame kind="bear" title="A way to the honey" text={messages[step]} sound={sound}>
     <svg className={`bear-tree ${hint ? 'show-reach' : ''}`} viewBox="0 -40 480 355" role="group" aria-label="Bear and three branches">
       <g transform={variation.mirror ? "translate(480 0) scale(-1 1)" : undefined}><path d="M285 295L295 20h35l12 275" fill="#b2a07c"/><ellipse cx="310" cy="30" rx="110" ry="33" fill="#9aae87"/>
@@ -67,7 +69,7 @@ function Bear({ sound, onComplete }: Props) {
       <g className={`climbing-bear ${step < 2 ? 'bear-reaching' : ''}`} style={{ transform: `translate(120px, ${bearY}px)` }}><svg width="105" height="120"><ForestAnimal kind="bear" settled={height === 3}/></svg></g></g>
     </svg>
     <p className="play-hint" role="status">{hint ? 'Hmm... that is a long reach. Look for a branch just above my paws.' : step === 2 && height < 3 ? 'Touch a branch to guide Bear. One careful step at a time.' : 'Show Bear how you reach!'}</p>
-    <div className="play-actions">{step < 2 ? <Action onClick={() => setStep(v => v + 1)}>Done</Action> : height === 3 ? <Action onClick={onComplete}>Enjoy your honey, Bear</Action> : null}</div>
+    <div className="play-actions">{step < 2 ? <ContinueButton onClick={() => setStep(v => v + 1)}>I did it!</ContinueButton> : height === 3 ? <ContinueButton onClick={onComplete}>Keep exploring</ContinueButton> : null}</div>
   </Frame>
   function choose(i: number) { if (step !== 2 || height === 3) return; if (i === height) { setHeight(v => v + 1); setHint(false) } else setHint(true) }
 }
@@ -76,12 +78,12 @@ function Snake({ sound, onComplete }: Props) {
   const [step, setStep] = useState(0), [hint, setHint] = useState(false), [moves, setMoves] = useState<string[]>([])
   const [variation] = useState(() => ({ directions: freshShuffle('snake-direction', ['Left', 'Right']), moves: freshShuffle('snake-moves', ['← Sway', 'Curl', 'Wiggle', 'Stretch ↑']) }))
   const [first, answer] = variation.directions
-  const text = [`${first}... ${answer}... ${first}... I forget! Which way comes next?`, `${answer}! Can you sway with me? ${first}, ${answer}, ${first}, ${answer}. Your hand can be a snake, too.`, 'What would YOUR snake do? Make a little movement trail, then try it with your body or hand.', 'A movement all your own! I wonder where your wiggles will go next.'][step]
+  const text = [`${first}... ${answer}... ${first}... I forget! Which way comes next?`, `${answer}! Can you sway with me? ${first}, ${answer}, ${first}, ${answer}. Your hand can be a snake, too.`, 'What would YOUR snake do? Tap movement buttons to make a trail. Then copy it with your body or hand.', 'A movement all your own! I wonder where your wiggles will go next.'][step]
   return <Frame kind="snake" title="Wiggles with Baby Snake" text={text} sound={sound}>
     <div className="snake-trail"><Friend kind="snake"/><div className="direction-trail" aria-label={`${first}, ${answer}, ${first}, unknown`}>{step < 2 ? <>{[first,answer,first,step===0?'?':answer].map((direction,i)=><span key={i} className={hint && i===0?'useful-clue':''}>{direction==='Left'?'← Left':direction==='Right'?'Right →':'?'}</span>)}</> : moves.map((m, i) => <span key={i}>{m}</span>)}</div></div>
     {hint && step === 0 && <p className="play-hint" role="status">Let's look again. We switch sides each time. After {first.toLowerCase()} comes...</p>}
-    <div className="play-actions">{step === 0 ? <>{['Left', 'Right'].map(direction => <Action key={direction} onClick={() => { if(direction === answer) { setStep(1); setHint(false) } else setHint(true) }}>{direction}</Action>)}</> : step === 1 ? <><Action onClick={() => setStep(2)}>Done</Action></> : step === 2 ? <>{variation.moves.map(m => <Action key={m} disabled={moves.length >= 6} onClick={() => setMoves(v => [...v, m])}>{m}</Action>)}<Action onClick={() => setMoves([])}>Start my trail again</Action><Action disabled={!moves.length} onClick={() => setStep(3)}>I tried my movement</Action><Action onClick={() => setStep(3)}>I invented a different movement</Action></> : <Action onClick={onComplete}>Follow the bend</Action>}</div>
-    {step === 2 && <p className="play-hint">Choose up to six movements. Every trail is welcome.</p>}
+    <div className="play-actions">{step === 0 ? <>{['Left', 'Right'].map(direction => <Action key={direction} onClick={() => { if(direction === answer) { setStep(1); setHint(false) } else setHint(true) }}>{direction}</Action>)}</> : step === 1 ? <><ContinueButton onClick={() => setStep(2)}>I tried the snake moves!</ContinueButton></> : step === 2 ? <>{variation.moves.map(m => <Action key={m} disabled={moves.length >= 6} onClick={() => setMoves(v => [...v, m])}>{m}</Action>)}<Action onClick={() => setMoves([])}>Start my trail again</Action><ContinueButton disabled={!moves.length} onClick={() => setStep(3)}>I tried my movement</ContinueButton><Action continueAnywhere={!moves.length} onClick={() => setStep(3)}>I invented a different movement</Action></> : <ContinueButton onClick={onComplete}>Keep exploring</ContinueButton>}</div>
+    {step === 2 && <p className="play-hint">Tap moves to make a trail. Try them with your body, then tap anywhere.</p>}
   </Frame>
 }
 
@@ -99,10 +101,10 @@ function Squirrel({ sound, onComplete }: Props) {
     const timer = window.setTimeout(() => setShow(false), 6500)
     return () => clearTimeout(timer)
   }, [show, round, setShow])
-  return <Frame kind="squirrel" title="Where did I tuck them?" text={done ? round === 0 ? 'My two acorns! Shall we try three little hiding places?' : 'All three! My winter snack is safe. Thank you!' : show ? `Here are ${targets.length} acorns. Have a good look. I always forget where I put things!` : 'Now where were they? Peek beneath the places you remember.'} sound={sound}>
+  return <Frame kind="squirrel" title="Where did I tuck them?" text={done ? round === 0 ? 'My two acorns! Shall we try three little hiding places?' : 'All three! My winter snack is safe. Thank you!' : show ? `Here are ${targets.length} acorns. Remember their places. Tap anywhere to hide them.` : 'Tap the places where you saw acorns.'} sound={sound}>
     <div className="acorn-clearing">{hidingPlaces.map((name, i) => <button key={name} className={`${found.includes(i) ? 'acorn-found' : ''} ${hint === i ? 'rustling-place' : ''}`} disabled={show || done || found.includes(i)} aria-label={`Look under ${name}`} onClick={() => choose(i)}><PlaceArt index={i} acorn={(show && targets.includes(i)) || found.includes(i)}/><span>{name}</span>{found.includes(i) && <small>Acorn found</small>}</button>)}</div>
     <p className="play-hint" role="status">{hint !== null ? 'Just a little rustle here. Shall we look at the hiding places again?' : `${found.length} of ${targets.length} acorns tucked safely away.`}</p>
-    <div className="play-actions">{done ? <Action onClick={() => { if (round === 0) { setRound(1); setFound([]); setShow(true); setHint(null) } else onComplete() }}>{round === 0 ? 'Hide three acorns' : 'Safe and snug, Squirrel'}</Action> : show ? <Action onClick={() => setShow(false)}>Ready to remember</Action> : <Action onClick={() => { setShow(true); setFound([]); setHint(null) }}>Look again</Action>}</div>
+    <div className="play-actions">{done ? <ContinueButton onClick={() => { if (round === 0) { setRound(1); setFound([]); setShow(true); setHint(null) } else onComplete() }}>{round === 0 ? 'Try 3 acorns' : 'Keep exploring'}</ContinueButton> : show ? <ContinueButton onClick={() => setShow(false)}>Hide the acorns</ContinueButton> : <Action onClick={() => { setShow(true); setFound([]); setHint(null) }}>Look again</Action>}</div>
   </Frame>
 }
 
@@ -112,7 +114,7 @@ function Owl({sound,onComplete}:Props){
  const target=variation.order[round]
  return <Frame kind="owl" title="Look with Owl" text={done?round===3?'A bird! Look, a feather leads toward the nest.':'You found our forest friend.':`Find the ${pictureAnimals[target].name}!`} sound={sound}>
   <PictureGuess key={round} target={target} choices={variation.choices} onComplete={()=>setDone(true)}/>
-  {done&&<div className="play-actions"><Action onClick={()=>{if(round===3)onComplete();else{setRound(n=>n+1);setDone(false)}}}>{round===3?'Follow the feathers':'Another picture'}</Action></div>}
+  {done&&<div className="play-actions"><ContinueButton onClick={()=>{if(round===3)onComplete();else{setRound(n=>n+1);setDone(false)}}}>{round===3?'Keep exploring':'Find another animal'}</ContinueButton></div>}
  </Frame>
 }
 

@@ -1,8 +1,8 @@
+import {ContinueButton} from '../play/ContinueButton'
 import {useEffect,useRef,useState} from 'react'
 import type {PointerEvent as ReactPointerEvent} from 'react'
 import {Volume2} from 'lucide-react'
 import {Milo} from '../Illustrations'
-import {Action} from '../forest/AnimalActivity'
 import {narrate} from '../narration'
 import {FoodArt,KitchenBackdrop} from './KitchenArt'
 import type {FoodKind} from './KitchenArt'
@@ -28,5 +28,5 @@ export function MealMoment({intro=false,afterStep=0,sound,onContinue,bowl="bowl"
  const text=intro?"We're going to eat and play together now.":mealPrompts[afterStep]
  const detail=intro?'Bring your food and your grown-up.':text.includes('5')?"Keep chewing until you're ready. No hurry.":'The game can wait. Take your time.'
  useEffect(()=>{if(sound)return narrate(text+' '+detail)},[sound,text,detail])
- return <><section className="kitchen-instruction kitchen-meal-message"><span>{intro?'BEFORE WE COOK':'MEALTIME PAUSE'}</span><h2 aria-live="polite">{text}</h2><p>{detail}</p><button className="replay" aria-label="Hear mealtime invitation" onClick={()=>{if(sound)narrate(text+' '+detail)}}><Volume2 size={22}/></button></section><div className="kitchen-stage kitchen-quiet" data-meal-break={intro?'intro':afterStep}><KitchenBackdrop/><div className="kitchen-worktop"><div className="kitchen-table-together"><div className="kitchen-table-milo"><Milo mood="happy"/></div><div className="kitchen-table-bowl"><FoodArt kind={bowl} filled/></div><div className="kitchen-table-spoon"><FoodArt kind="spoon"/></div></div></div></div><footer className="kitchen-footer"><Action onClick={onContinue}>{intro?"Let's eat and play":'Keep cooking'}</Action></footer></>
+ return <><section className="kitchen-instruction kitchen-meal-message"><span>{intro?'BEFORE WE COOK':'MEALTIME PAUSE'}</span><h2 aria-live="polite">{text}</h2><p>{detail}</p><button className="replay" aria-label="Hear mealtime invitation" onClick={()=>{if(sound)narrate(text+' '+detail)}}><Volume2 size={22}/></button></section><div className="kitchen-stage kitchen-quiet" data-meal-break={intro?'intro':afterStep}><KitchenBackdrop/><div className="kitchen-worktop"><div className="kitchen-table-together"><div className="kitchen-table-milo"><Milo mood="happy"/></div><div className="kitchen-table-bowl"><FoodArt kind={bowl} filled/></div><div className="kitchen-table-spoon"><FoodArt kind="spoon"/></div></div></div></div><footer className="kitchen-footer"><ContinueButton onClick={onContinue}>{intro?"Let's eat and play":'Keep cooking'}</ContinueButton></footer></>
 }
