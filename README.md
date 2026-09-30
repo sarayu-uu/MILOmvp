@@ -91,3 +91,13 @@ A small illustrated pond on the homepage opens four areas: Color fish, Frog lily
 The homepage includes the Play Together message. Existing House, Forest and Story Tree artwork and the original Milo character are preserved. Selected movement and place-selection instructions are shorter. Sound guessing in Owl, the Moon story and the optional bushes game is replaced with emoji animal matching; none requires audio playback. No new backend, accounts, scores, rewards or parent systems are introduced.
 
 After building, `node pond-smoke.mjs` checks all four activities and replays, gentle retries, counting, keyboard and touch input, return navigation and four screen sizes. It also disables the Web Audio API to check the games do not rely on sound effects. Screenshots are saved in `images/`.
+
+## Food Garden: Carrot Soup
+
+The fruit basket beside Milo's house opens one recipe: Carrot Soup. Ten child-paced stages cover finding three carrots, washing, recognizing prepared pieces, filling a pot, adding water, stirring, a shared-meal pause, choosing a round bowl, serving and talking together. Vegetable positions, matching choices and bowls shuffle on replay; retries keep the same arrangement.
+
+Water, carrot pieces and the spoon support mouse/touch dragging and tap-then-target selection. Keyboard users can select the source and destination with Enter. Stirring follows circular pointer movement and also offers a Stir once button. The calm pause changes its invitation after 12 seconds, but Keep cooking is available immediately. Eating is never measured, required or rewarded. Milo's original artwork stays unchanged; bowls and spoons are separate illustrations.
+
+After building, run `node kitchen-smoke.mjs` for the complete recipe, gentle retries, mouse/touch dragging, circular stirring, replay, optional pause and desktop/mobile checks. It starts and stops its preview server and saves pictures under `images/`.
+
+Food Garden now begins with an eat-and-play invitation. Seven mealtime breaks separate the cooking tasks, including gentle "Chew 5 times, slowly" prompts and a reminder to keep chewing at your own pace. Each break waits for Keep cooking; there is no eating verification or reward gate. All homepage worlds are immediately available. The Play Together message and optional Let's Go introduction still invite a grown-up to join.
