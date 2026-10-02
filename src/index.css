@@ -47,7 +47,7 @@ button:hover,button:active{transform:none}
  .map-view .welcome-milo{left:1%;width:21%;bottom:6%}
  .map-view .world-bottom{bottom:7px;font-size:8px}
 }
-@media(max-height:540px) and (min-width:601px){
+@media(max-height:540px) and (orientation:landscape){
  .map-view>header{padding:8px 20px}
  .map-view .brand-name{font-size:32px}
  .map-view .brand>span:last-child{font-size:6px}
@@ -75,4 +75,21 @@ button:hover,button:active{transform:none}
 }
 @media(min-width:1001px) and (max-width:1200px){
  .map-view .pond-location{left:3%;width:11%;height:65px}
+}
+/* Small landscape phones use the wide world composition, not portrait overrides. */
+@media(max-width:600px) and (orientation:landscape){
+ .map-view .world-art{inset:0;width:100%;height:100%}
+ .map-view .home-location{left:3%;top:36%;width:26%;height:30%}
+ .map-view .forest-location{left:40%;top:38%;width:24%;height:28%}
+ .map-view .tree-location{left:73%;top:30%;width:24%;height:36%}
+ .map-view .welcome-dialogue{display:flex;left:35%;width:62%;bottom:19px;padding:8px;min-height:0}
+ .map-view .welcome-dialogue .primary{width:auto;font-size:11px;flex-shrink:0}
+ .map-view .welcome-dialogue h2{font-size:14px}
+ .map-view .welcome-dialogue p{max-width:none;font-size:10px}
+ .map-view .welcome-dialogue .replay{position:static;flex-shrink:0;margin:0}
+ .map-view .world-title p{display:none}
+ .map-view .play-together{top:24%;font-size:9px;padding:4px 7px}
+ .map-view .location-label{font-size:10px;padding:6px 8px}
+ .map-view .location-note{font-size:8px}
+ .map-view .path-marker{width:26px;height:26px;margin-bottom:3px}
 }
